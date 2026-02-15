@@ -1,0 +1,127 @@
+//
+//  Utilities.swift
+//  Komari Mobile
+//
+//  Created by Junhui Lou on 2/15/26.
+//
+
+import Foundation
+import SwiftUI
+import UIKit
+
+// Copy text
+func copy(_ text: String) {
+    UIPasteboard.general.string = text
+}
+
+// Handle empty name
+func nameCanBeUntitled(_ name: String?) -> String {
+    guard let name = name else { return String(localized: "Untitled") }
+    return name != "" ? name : String(localized: "Untitled")
+}
+
+// Bytes To Data Amount String
+func formatBytes(_ bytes: Int64, decimals: Int = 2) -> String {
+    let units = ["B", "KB", "MB", "GB", "TB", "PB"]
+    var value = Double(bytes)
+    var unitIndex = 0
+
+    while value >= 1024 && unitIndex < units.count - 1 {
+        value /= 1024
+        unitIndex += 1
+    }
+
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.maximumFractionDigits = decimals
+    formatter.roundingMode = .ceiling
+
+    guard let formattedValue = formatter.string(from: NSNumber(value: value)) else {
+        return ""
+    }
+
+    return "\(formattedValue) \(units[unitIndex])"
+}
+
+// Seconds To Interval String
+func formatTimeInterval(seconds: Int64, shortened: Bool = false) -> String {
+    let minutes = seconds / 60
+    let hours = minutes / 60
+    let days = hours / 24
+
+    if days >= 10 {
+        return "\(days)d"
+    } else if days > 0 {
+        return shortened ? "\(days)d" : "\(days)d\(hours % 24)h"
+    } else if hours > 0 {
+        return shortened ? "\(hours)h" : "\(hours)h\(minutes % 60)m"
+    } else if minutes > 0 {
+        return shortened ? "\(minutes)m" : "\(minutes)m\(seconds % 60)s"
+    } else {
+        return "\(seconds)s"
+    }
+}
+
+// Capitalizer
+extension String {
+    func capitalizeFirstLetter() -> String {
+        guard !self.isEmpty else { return self }
+        return self.prefix(1).uppercased() + self.dropFirst()
+    }
+}
+
+// "if" Modifier
+extension View {
+    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}
+
+// Color String Unarchiver
+extension Color: @retroactive RawRepresentable {
+    public init?(base64EncodedString: String) {
+        guard let data = Data(base64Encoded: base64EncodedString) else {
+            return nil
+        }
+        do {
+            let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) ?? .white
+            self = Color(color)
+        } catch {
+            return nil
+        }
+    }
+
+    public var base64EncodedString: String? {
+        do {
+            let data = try NSKeyedArchiver.archivedData(withRootObject: UIColor(self), requiringSecureCoding: false) as Data
+            return data.base64EncodedString()
+        } catch {
+            return nil
+        }
+    }
+
+    public init?(rawValue: String) {
+        guard let data = Data(base64Encoded: rawValue) else {
+            return nil
+        }
+        do {
+            let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) ?? .white
+            self = Color(color)
+        } catch {
+            return nil
+        }
+    }
+
+    public var rawValue: String {
+        do {
+            let data = try NSKeyedArchiver.archivedData(withRootObject: UIColor(self), requiringSecureCoding: false) as Data
+            return data.base64EncodedString()
+        } catch {
+            return ""
+        }
+    }
+}
