@@ -16,6 +16,16 @@ struct AddDashboardView: View {
     @State private var password: String = ""
     @State private var apiKey: String = ""
     @State private var isSSLEnabled: Bool = true
+    @State private var useAPIKey: Bool = false
+
+    private var canSave: Bool {
+        if link.isEmpty { return false }
+        if useAPIKey {
+            return !apiKey.isEmpty
+        } else {
+            return !username.isEmpty && !password.isEmpty
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -31,19 +41,29 @@ struct AddDashboardView: View {
                     Text("Dashboard Info")
                 } footer: {
                     VStack(alignment: .leading) {
-                        Text("Dashboard Link Example: komari.example.com")
+                        Text("Dashboard Link Example: komari.hidandelion.com")
                     }
                 }
 
-                Section("Credentials") {
-                    TextField("Username", text: $username)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                    SecureField("Password", text: $password)
-                }
+                Section("Authentication") {
+                    Toggle("Use API Key", isOn: $useAPIKey)
+                        .onChange(of: useAPIKey) {
+                            if useAPIKey {
+                                username = ""
+                                password = ""
+                            } else {
+                                apiKey = ""
+                            }
+                        }
 
-                Section("API Key (Alternative)") {
-                    SecureField("API Key", text: $apiKey)
+                    if useAPIKey {
+                        SecureField("API Key", text: $apiKey)
+                    } else {
+                        TextField("Username", text: $username)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                        SecureField("Password", text: $password)
+                    }
                 }
 
                 Section {
@@ -75,7 +95,7 @@ struct AddDashboardView: View {
                         isShowingOnboarding = false
                         dismiss()
                     }
-                    .disabled(link.isEmpty || (username.isEmpty && password.isEmpty && apiKey.isEmpty))
+                    .disabled(!canSave)
                 }
             }
         }

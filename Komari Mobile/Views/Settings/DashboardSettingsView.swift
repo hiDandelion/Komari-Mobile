@@ -15,6 +15,7 @@ struct DashboardSettingsView: View {
     @State private var password: String = KMCore.getKomariDashboardPassword()
     @State private var apiKey: String = KMCore.getKomariAPIKey()
     @State private var isSSLEnabled: Bool = KMCore.getIsKomariDashboardSSLEnabled()
+    @State private var useAPIKey: Bool = !KMCore.getKomariAPIKey().isEmpty
     @State private var testResult: String = ""
     @State private var isTesting: Bool = false
 
@@ -30,18 +31,28 @@ struct DashboardSettingsView: View {
             } header: {
                 Text("Dashboard Info")
             } footer: {
-                Text("Dashboard Link Example: komari.example.com")
+                Text("Dashboard Link Example: komari.hidandelion.com")
             }
 
-            Section("Credentials") {
-                TextField("Username", text: $username)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                SecureField("Password", text: $password)
-            }
+            Section("Authentication") {
+                Toggle("Use API Key", isOn: $useAPIKey)
+                    .onChange(of: useAPIKey) {
+                        if useAPIKey {
+                            username = ""
+                            password = ""
+                        } else {
+                            apiKey = ""
+                        }
+                    }
 
-            Section("API Key (Alternative)") {
-                SecureField("API Key", text: $apiKey)
+                if useAPIKey {
+                    SecureField("API Key", text: $apiKey)
+                } else {
+                    TextField("Username", text: $username)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                    SecureField("Password", text: $password)
+                }
             }
 
             Section {

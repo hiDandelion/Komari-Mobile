@@ -13,8 +13,8 @@ enum SortIndicator: CaseIterable {
     case cpu
     case memory
     case disk
-    case upload
-    case download
+    case uploadTraffic
+    case downloadTraffic
 
     var title: String {
         switch self {
@@ -23,8 +23,8 @@ enum SortIndicator: CaseIterable {
         case .cpu: String(localized: "CPU")
         case .memory: String(localized: "Memory")
         case .disk: String(localized: "Disk")
-        case .upload: String(localized: "Upload")
-        case .download: String(localized: "Download")
+        case .uploadTraffic: String(localized: "Upload")
+        case .downloadTraffic: String(localized: "Download")
         }
     }
 }

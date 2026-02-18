@@ -36,10 +36,18 @@ enum ChartPeriod {
     /// Interval in seconds for downsampling
     var downsampleInterval: TimeInterval {
         switch self {
-        case .fourHours: 60         // 1 minute
-        case .oneDay: 15 * 60      // 15 minutes
-        case .sevenDays: 60 * 60   // 1 hour
-        case .thirtyDays: 60 * 60  // 1 hour
+        case .fourHours: 60            // 1 min  → ~240 pts
+        case .oneDay: 15 * 60         // 15 min → ~96 pts
+        case .sevenDays: 60 * 60      // 1 hour → ~168 pts
+        case .thirtyDays: 2 * 60 * 60 // 2 hour → ~360 pts
+        }
+    }
+
+    /// CatmullRom for fine-grained 4h data; linear for coarser periods to avoid overshoot artifacts with AreaMark
+    var interpolation: InterpolationMethod {
+        switch self {
+        case .fourHours: .catmullRom
+        case .oneDay, .sevenDays, .thirtyDays: .linear
         }
     }
 }
@@ -102,14 +110,14 @@ struct MetricsChart: View {
                         y: .value(title, point.value)
                     )
                     .foregroundStyle(color.gradient)
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(period.interpolation)
 
                     AreaMark(
                         x: .value("Time", point.date),
                         y: .value(title, point.value)
                     )
                     .foregroundStyle(color.opacity(0.1).gradient)
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(period.interpolation)
                 }
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
@@ -183,7 +191,7 @@ struct MetricsMultiSeriesChart: View {
                                 series: .value("Series", s.name)
                             )
                             .foregroundStyle(s.color)
-                            .interpolationMethod(.catmullRom)
+                            .interpolationMethod(period.interpolation)
                         }
                     }
                 }

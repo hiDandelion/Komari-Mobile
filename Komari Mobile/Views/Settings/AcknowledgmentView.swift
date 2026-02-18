@@ -11,7 +11,7 @@ struct AcknowledgmentView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                Text("This project is subject to\nApache License\nVersion 2.0, January 2004\nhttps://www.apache.org/licenses/")
+                Text("This project is subject to\nMIT License")
                 Text("Part of this project is related to Project komari-monitor/komari which is subject to\nMIT License")
             }
             .font(.caption2)

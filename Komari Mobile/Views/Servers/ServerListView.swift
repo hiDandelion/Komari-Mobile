@@ -54,13 +54,13 @@ struct ServerListView: View {
             let va = diskUsage(for: statusA)
             let vb = diskUsage(for: statusB)
             return sortOrder == .ascending ? va < vb : va > vb
-        case .upload:
-            let va: Int64 = statusA?.networkOutSpeed ?? 0
-            let vb: Int64 = statusB?.networkOutSpeed ?? 0
+        case .uploadTraffic:
+            let va: Int64 = statusA?.networkOutTotal ?? 0
+            let vb: Int64 = statusB?.networkOutTotal ?? 0
             return sortOrder == .ascending ? va < vb : va > vb
-        case .download:
-            let va: Int64 = statusA?.networkInSpeed ?? 0
-            let vb: Int64 = statusB?.networkInSpeed ?? 0
+        case .downloadTraffic:
+            let va: Int64 = statusA?.networkInTotal ?? 0
+            let vb: Int64 = statusB?.networkInTotal ?? 0
             return sortOrder == .ascending ? va < vb : va > vb
         }
     }

@@ -18,11 +18,17 @@ struct OnboardingView: View {
     @State private var password = ""
     @State private var apiKey = ""
     @State private var isSSLEnabled = true
+    @State private var useAPIKey = false
 
     private let totalPages = 4
 
     private var canConnect: Bool {
-        !link.isEmpty && !(username.isEmpty && password.isEmpty && apiKey.isEmpty)
+        if link.isEmpty { return false }
+        if useAPIKey {
+            return !apiKey.isEmpty
+        } else {
+            return !username.isEmpty && !password.isEmpty
+        }
     }
 
     var body: some View {
@@ -146,25 +152,42 @@ struct OnboardingView: View {
                 }
 
                 VStack(spacing: 12) {
-                    onboardingField(icon: "globe", placeholder: "komari.example.com", text: $link)
+                    onboardingField(icon: "globe", placeholder: "komari.hidandelion.com", text: $link)
                         .onChange(of: link) {
                             link = link.replacingOccurrences(of: "^(http|https)://", with: "", options: .regularExpression)
                         }
 
-                    onboardingField(icon: "person", placeholder: "Username", text: $username)
-
-                    onboardingSecureField(icon: "lock", placeholder: "Password", text: $password)
+                    if useAPIKey {
+                        onboardingSecureField(icon: "key", placeholder: "API Key", text: $apiKey)
+                            .transition(.blurReplace)
+                    } else {
+                        onboardingField(icon: "person", placeholder: "Username", text: $username)
+                            .transition(.blurReplace)
+                        onboardingSecureField(icon: "lock", placeholder: "Password", text: $password)
+                            .transition(.blurReplace)
+                    }
 
                     HStack {
-                        Rectangle().frame(height: 1).foregroundStyle(.quaternary)
-                        Text("or")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                        Rectangle().frame(height: 1).foregroundStyle(.quaternary)
+                        Image(systemName: "key")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 20)
+                        Text("Use API Key")
+                            .font(.subheadline)
+                        Spacer()
+                        Toggle("", isOn: $useAPIKey)
+                            .labelsHidden()
                     }
-                    .padding(.horizontal, 4)
-
-                    onboardingSecureField(icon: "key", placeholder: "API Key", text: $apiKey)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color(UIColor.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .onChange(of: useAPIKey) {
+                        if useAPIKey {
+                            username = ""
+                            password = ""
+                        } else {
+                            apiKey = ""
+                        }
+                    }
 
                     HStack {
                         Image(systemName: "lock.shield")
@@ -240,8 +263,8 @@ struct OnboardingView: View {
 private struct OnboardingFeaturePage: View {
     let icon: String
     let iconColor: Color
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
 
     @State private var iconAppeared = false
     @State private var titleAppeared = false
