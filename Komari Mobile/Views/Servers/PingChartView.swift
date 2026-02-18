@@ -66,32 +66,39 @@ struct PingChartView: View {
 
     @ViewBuilder
     private var contentSection: some View {
-        switch loadingState {
-        case .idle, .loading:
-            ProgressView()
-                .frame(maxWidth: .infinity, minHeight: 100)
-        case .loaded:
-            if tasks.isEmpty {
-                Text("No Data")
-                    .foregroundStyle(.secondary)
+        Group {
+            switch loadingState {
+            case .idle, .loading:
+                ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 100)
-            } else {
+                    .transition(.blurReplace)
+            case .loaded:
+                if tasks.isEmpty {
+                    Text("No Data")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 100)
+                        .transition(.blurReplace)
+                } else {
+                    VStack(spacing: 10) {
+                        taskSummaryCard
+                        pingChart
+                    }
+                    .transition(.blurReplace)
+                }
+            case .error(let message):
                 VStack(spacing: 10) {
-                    taskSummaryCard
-                    pingChart
+                    Text(message)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button("Retry") {
+                        fetchPingRecords()
+                    }
                 }
+                .frame(maxWidth: .infinity, minHeight: 100)
+                .transition(.blurReplace)
             }
-        case .error(let message):
-            VStack(spacing: 10) {
-                Text(message)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Button("Retry") {
-                    fetchPingRecords()
-                }
-            }
-            .frame(maxWidth: .infinity, minHeight: 100)
         }
+        .animation(.smooth(duration: 0.3), value: loadingState)
     }
 
     private var taskSummaryCard: some View {

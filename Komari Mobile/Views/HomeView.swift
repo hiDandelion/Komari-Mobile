@@ -11,17 +11,34 @@ struct HomeView: View {
     @Environment(KMState.self) var state
 
     var body: some View {
-        TabView(selection: Bindable(state).tab) {
-            Tab(value: MainTab.servers) {
-                ServerListView()
-            } label: {
-                Label(MainTab.servers.title, systemImage: MainTab.servers.systemName)
+        if #available(iOS 18.0, *) {
+            TabView(selection: Bindable(state).tab) {
+                Tab(value: MainTab.servers) {
+                    ServerListView()
+                } label: {
+                    Label(MainTab.servers.title, systemImage: MainTab.servers.systemName)
+                }
+                
+                Tab(value: MainTab.settings) {
+                    SettingsView()
+                } label: {
+                    Label(MainTab.settings.title, systemImage: MainTab.settings.systemName)
+                }
             }
-
-            Tab(value: MainTab.settings) {
+        }
+        else {
+            TabView(selection: Bindable(state).tab) {
+                ServerListView()
+                    .tabItem {
+                        Label(MainTab.servers.title, systemImage: MainTab.servers.systemName)
+                    }
+                    .tag(MainTab.servers)
+                
                 SettingsView()
-            } label: {
-                Label(MainTab.settings.title, systemImage: MainTab.settings.systemName)
+                    .tabItem {
+                        Label(MainTab.settings.title, systemImage: MainTab.settings.systemName)
+                    }
+                    .tag(MainTab.settings)
             }
         }
     }

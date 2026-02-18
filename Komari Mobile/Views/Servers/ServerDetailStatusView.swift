@@ -68,6 +68,7 @@ struct ServerDetailStatusView: View {
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
+                .contentTransition(.numericText())
         }
         .font(.subheadline)
     }

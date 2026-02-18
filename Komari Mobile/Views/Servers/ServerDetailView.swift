@@ -34,10 +34,13 @@ struct ServerDetailView: View {
                 VStack {
                     if isOnline {
                         content(node: node, status: status)
+                            .transition(.blurReplace)
                     } else {
                         ContentUnavailableView("Server Unavailable", systemImage: "square.stack.3d.up.slash.fill")
+                            .transition(.blurReplace)
                     }
                 }
+                .animation(.smooth(duration: 0.3), value: isOnline)
                 .navigationTitle(node.name)
                 .navigationBarTitleDisplayMode(.inline)
             } else {
@@ -61,15 +64,21 @@ struct ServerDetailView: View {
                 .pickerStyle(.segmented)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
-                
-                switch(activeTab) {
-                case .status:
-                    ServerDetailStatusView(node: node, status: status)
-                case .load:
-                    ServerDetailMonitorView(node: node)
-                case .ping:
-                    PingChartView(node: node)
+
+                Group {
+                    switch(activeTab) {
+                    case .status:
+                        ServerDetailStatusView(node: node, status: status)
+                            .transition(.blurReplace)
+                    case .load:
+                        ServerDetailMonitorView(node: node)
+                            .transition(.blurReplace)
+                    case .ping:
+                        PingChartView(node: node)
+                            .transition(.blurReplace)
+                    }
                 }
+                .animation(.smooth(duration: 0.25), value: activeTab)
             }
         }
     }

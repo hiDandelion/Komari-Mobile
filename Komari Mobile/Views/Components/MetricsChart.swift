@@ -14,11 +14,74 @@ struct MetricsDataPoint: Identifiable {
     let value: Double
 }
 
+// MARK: - Chart Period (for axis formatting)
+
+enum ChartPeriod {
+    case fourHours
+    case oneDay
+    case sevenDays
+    case thirtyDays
+
+    var xAxisFormat: Date.FormatStyle {
+        switch self {
+        case .fourHours:
+            .dateTime.hour().minute()
+        case .oneDay:
+            .dateTime.hour().minute()
+        case .sevenDays, .thirtyDays:
+            .dateTime.month(.abbreviated).day()
+        }
+    }
+
+    /// Interval in seconds for downsampling
+    var downsampleInterval: TimeInterval {
+        switch self {
+        case .fourHours: 60         // 1 minute
+        case .oneDay: 15 * 60      // 15 minutes
+        case .sevenDays: 60 * 60   // 1 hour
+        case .thirtyDays: 60 * 60  // 1 hour
+        }
+    }
+}
+
+// MARK: - Downsampling
+
+/// Sorts data points by date and downsamples to regular intervals by averaging within buckets.
+func downsampleDataPoints(_ points: [MetricsDataPoint], interval: TimeInterval) -> [MetricsDataPoint] {
+    guard !points.isEmpty else { return [] }
+
+    let sorted = points.sorted { $0.date < $1.date }
+
+    // For very small datasets or very short intervals, skip downsampling
+    if sorted.count <= 200 { return sorted }
+
+    let startTime = sorted.first!.date.timeIntervalSince1970
+    var buckets: [Int: (sum: Double, count: Int, date: Date)] = [:]
+
+    for point in sorted {
+        let bucketIndex = Int((point.date.timeIntervalSince1970 - startTime) / interval)
+        if var existing = buckets[bucketIndex] {
+            existing.sum += point.value
+            existing.count += 1
+            buckets[bucketIndex] = existing
+        } else {
+            // Use the midpoint of the bucket as the representative date
+            let bucketDate = Date(timeIntervalSince1970: startTime + Double(bucketIndex) * interval + interval / 2)
+            buckets[bucketIndex] = (sum: point.value, count: 1, date: bucketDate)
+        }
+    }
+
+    return buckets.sorted { $0.key < $1.key }.map { _, bucket in
+        MetricsDataPoint(date: bucket.date, value: bucket.sum / Double(bucket.count))
+    }
+}
+
 struct MetricsChart: View {
     let title: String
     let dataPoints: [MetricsDataPoint]
     let unit: String
     let color: Color
+    var period: ChartPeriod = .fourHours
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -32,7 +95,8 @@ struct MetricsChart: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
-                Chart(dataPoints) { point in
+                let processed = downsampleDataPoints(dataPoints, interval: period.downsampleInterval)
+                Chart(processed) { point in
                     LineMark(
                         x: .value("Time", point.date),
                         y: .value(title, point.value)
@@ -61,7 +125,7 @@ struct MetricsChart: View {
                 .chartXAxis {
                     AxisMarks { value in
                         AxisGridLine()
-                        AxisValueLabel(format: .dateTime.hour())
+                        AxisValueLabel(format: period.xAxisFormat)
                     }
                 }
                 .frame(height: 150)
@@ -82,6 +146,7 @@ struct MetricsMultiSeriesChart: View {
     let title: String
     let series: [MetricsSeriesData]
     let unit: String
+    var period: ChartPeriod = .fourHours
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -110,7 +175,8 @@ struct MetricsMultiSeriesChart: View {
             } else {
                 Chart {
                     ForEach(series, id: \.name) { s in
-                        ForEach(s.dataPoints) { point in
+                        let processed = downsampleDataPoints(s.dataPoints, interval: period.downsampleInterval)
+                        ForEach(processed) { point in
                             LineMark(
                                 x: .value("Time", point.date),
                                 y: .value(title, point.value),
@@ -135,7 +201,7 @@ struct MetricsMultiSeriesChart: View {
                 .chartXAxis {
                     AxisMarks { _ in
                         AxisGridLine()
-                        AxisValueLabel(format: .dateTime.hour())
+                        AxisValueLabel(format: period.xAxisFormat)
                     }
                 }
                 .frame(height: 150)

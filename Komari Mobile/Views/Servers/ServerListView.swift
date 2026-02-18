@@ -161,15 +161,17 @@ struct ServerListView: View {
             Picker("Sort", selection: Binding(get: {
                 sortIndicator
             }, set: { newValue in
-                if sortIndicator == newValue {
-                    switch(sortOrder) {
-                    case .ascending:
-                        sortOrder = .descending
-                    case .descending:
-                        sortOrder = .ascending
+                withAnimation(.snappy) {
+                    if sortIndicator == newValue {
+                        switch(sortOrder) {
+                        case .ascending:
+                            sortOrder = .descending
+                        case .descending:
+                            sortOrder = .ascending
+                        }
+                    } else {
+                        sortIndicator = newValue
                     }
-                } else {
-                    sortIndicator = newValue
                 }
             })) {
                 ForEach(SortIndicator.allCases, id: \.self) { indicator in
@@ -232,6 +234,10 @@ struct ServerListView: View {
                         let status = state.liveStatus[node.uuid]
                         let isOnline = state.onlineUUIDs.contains(node.uuid)
                         ServerCardView(node: node, status: status, isOnline: isOnline)
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.95).combined(with: .opacity),
+                                removal: .opacity
+                            ))
                             .hoverEffect(.automatic)
                             .onTapGesture {
                                 state.pathServers.append(node)

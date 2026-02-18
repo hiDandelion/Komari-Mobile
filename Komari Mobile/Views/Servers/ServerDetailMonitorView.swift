@@ -22,6 +22,15 @@ enum LoadPeriod: String, CaseIterable {
         case .thirtyDays: 720
         }
     }
+
+    var chartPeriod: ChartPeriod {
+        switch self {
+        case .fourHours: .fourHours
+        case .oneDay: .oneDay
+        case .sevenDays: .sevenDays
+        case .thirtyDays: .thirtyDays
+        }
+    }
 }
 
 struct ServerDetailMonitorView: View {
@@ -79,37 +88,44 @@ struct ServerDetailMonitorView: View {
 
     @ViewBuilder
     private var metricsSection: some View {
-        switch loadingState {
-        case .idle, .loading:
-            ProgressView()
-                .frame(maxWidth: .infinity, minHeight: 100)
-        case .loaded:
-            if records.isEmpty {
-                Text("No Data")
-                    .foregroundStyle(.secondary)
+        Group {
+            switch loadingState {
+            case .idle, .loading:
+                ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 100)
-            } else {
+                    .transition(.blurReplace)
+            case .loaded:
+                if records.isEmpty {
+                    Text("No Data")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 100)
+                        .transition(.blurReplace)
+                } else {
+                    VStack(spacing: 10) {
+                        cpuChart
+                        memoryChart
+                        diskChart
+                        networkSpeedChart
+                        connectionsChart
+                        processChart
+                        gpuChart
+                    }
+                    .transition(.blurReplace)
+                }
+            case .error(let message):
                 VStack(spacing: 10) {
-                    cpuChart
-                    memoryChart
-                    diskChart
-                    networkSpeedChart
-                    connectionsChart
-                    processChart
-                    gpuChart
+                    Text(message)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button("Retry") {
+                        fetchRecords()
+                    }
                 }
+                .frame(maxWidth: .infinity, minHeight: 100)
+                .transition(.blurReplace)
             }
-        case .error(let message):
-            VStack(spacing: 10) {
-                Text(message)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Button("Retry") {
-                    fetchRecords()
-                }
-            }
-            .frame(maxWidth: .infinity, minHeight: 100)
         }
+        .animation(.smooth(duration: 0.3), value: loadingState)
     }
 
     @ViewBuilder
@@ -126,6 +142,8 @@ struct ServerDetailMonitorView: View {
         )
     }
 
+    private var currentChartPeriod: ChartPeriod { period.chartPeriod }
+
     private var cpuChart: some View {
         let points = records.compactMap { record -> MetricsDataPoint? in
             guard let cpu = record.cpuUsage,
@@ -134,7 +152,7 @@ struct ServerDetailMonitorView: View {
             return MetricsDataPoint(date: date, value: Double(cpu))
         }
         return chartCard {
-            MetricsChart(title: "CPU", dataPoints: points, unit: "%", color: .blue)
+            MetricsChart(title: "CPU", dataPoints: points, unit: "%", color: .blue, period: currentChartPeriod)
         }
     }
 
@@ -146,7 +164,7 @@ struct ServerDetailMonitorView: View {
             return MetricsDataPoint(date: date, value: Double(used) / Double(total) * 100)
         }
         return chartCard {
-            MetricsChart(title: "Memory", dataPoints: points, unit: "%", color: .green)
+            MetricsChart(title: "Memory", dataPoints: points, unit: "%", color: .green, period: currentChartPeriod)
         }
     }
 
@@ -158,7 +176,7 @@ struct ServerDetailMonitorView: View {
             return MetricsDataPoint(date: date, value: Double(used) / Double(total) * 100)
         }
         return chartCard {
-            MetricsChart(title: "Disk", dataPoints: points, unit: "%", color: .orange)
+            MetricsChart(title: "Disk", dataPoints: points, unit: "%", color: .orange, period: currentChartPeriod)
         }
     }
 
@@ -182,7 +200,8 @@ struct ServerDetailMonitorView: View {
                     MetricsSeriesData(name: "In", dataPoints: inPoints, color: .purple),
                     MetricsSeriesData(name: "Out", dataPoints: outPoints, color: .red)
                 ],
-                unit: "KB/s"
+                unit: "KB/s",
+                period: currentChartPeriod
             )
         }
     }
@@ -207,7 +226,8 @@ struct ServerDetailMonitorView: View {
                     MetricsSeriesData(name: "TCP", dataPoints: tcpPoints, color: .blue),
                     MetricsSeriesData(name: "UDP", dataPoints: udpPoints, color: .teal)
                 ],
-                unit: ""
+                unit: "",
+                period: currentChartPeriod
             )
         }
     }
@@ -220,7 +240,7 @@ struct ServerDetailMonitorView: View {
             return MetricsDataPoint(date: date, value: Double(process))
         }
         return chartCard {
-            MetricsChart(title: "Process", dataPoints: points, unit: "", color: .pink)
+            MetricsChart(title: "Process", dataPoints: points, unit: "", color: .pink, period: currentChartPeriod)
         }
     }
 
@@ -235,7 +255,7 @@ struct ServerDetailMonitorView: View {
                 return MetricsDataPoint(date: date, value: Double(gpu))
             }
             chartCard {
-                MetricsChart(title: "GPU", dataPoints: points, unit: "%", color: .indigo)
+                MetricsChart(title: "GPU", dataPoints: points, unit: "%", color: .indigo, period: currentChartPeriod)
             }
         }
     }
@@ -245,8 +265,14 @@ struct ServerDetailMonitorView: View {
         Task {
             do {
                 let result = try await RecordHandler.getRecords(uuid: node.uuid, hours: period.hours)
+                // Sort records by time ascending (matching komari-web behavior)
+                let sorted = result.sorted { a, b in
+                    guard let ta = a.time, let tb = b.time,
+                          let da = Self.parseDate(ta), let db = Self.parseDate(tb) else { return false }
+                    return da < db
+                }
                 withAnimation {
-                    records = result
+                    records = sorted
                     loadingState = .loaded
                 }
             } catch {

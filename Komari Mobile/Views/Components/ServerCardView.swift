@@ -15,11 +15,12 @@ struct ServerCardView: View {
     var body: some View {
         ServerCard(node: node, status: status, isOnline: isOnline)
             .foregroundStyle(.primary)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color(UIColor.secondarySystemGroupedBackground))
-                    .shadow(color: .black.opacity(0.08), radius: 5, x: 5, y: 5)
-                    .shadow(color: .black.opacity(0.06), radius: 5, x: -5, y: -5)
+                    .shadow(color: .black.opacity(0.10), radius: 8, x: 0, y: 4)
+                    .shadow(color: .black.opacity(0.04), radius: 2, x: 0, y: 1)
             )
     }
 }
