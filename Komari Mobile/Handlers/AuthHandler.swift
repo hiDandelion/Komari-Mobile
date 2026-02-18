@@ -47,7 +47,7 @@ class AuthHandler {
         return true
     }
 
-    /// Get current user info
+    /// Get current user info (returns plain object, not wrapped in KomariBaseResponse)
     static func getMe() async throws -> MeResponseData {
         guard let url = KMCore.getAPIURL(endpoint: "/api/me") else {
             throw KomariError.invalidDashboardConfiguration
@@ -60,10 +60,10 @@ class AuthHandler {
         }
 
         let decoder = JSONDecoder()
-        let baseResponse = try decoder.decode(KomariBaseResponse<MeResponseData>.self, from: data)
+        let meData = try decoder.decode(MeResponseData.self, from: data)
 
-        guard baseResponse.isSuccess, let meData = baseResponse.data else {
-            throw KomariError.invalidResponse(baseResponse.message ?? "Failed to get user info")
+        guard meData.loggedIn == true else {
+            throw KomariError.authenticationFailed
         }
 
         return meData

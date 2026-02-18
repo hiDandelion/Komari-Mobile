@@ -44,4 +44,16 @@ class RecordHandler {
             throw error
         }
     }
+
+    /// Fetch ping records for a specific node via RPC2
+    static func getPingRecords(uuid: String, hours: Int) async throws -> PingRecordsData {
+        struct PingParams: Codable {
+            let uuid: String
+            let type: String
+            let hours: Int
+        }
+        let params = PingParams(uuid: uuid, type: "ping", hours: hours)
+        let result: PingRecordsData = try await RPC2Handler.call(method: "common:getRecords", params: params)
+        return result
+    }
 }

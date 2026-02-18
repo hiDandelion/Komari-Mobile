@@ -8,306 +8,283 @@
 import SwiftUI
 
 struct ServerDetailStatusView: View {
-    @Environment(\.colorScheme) private var scheme
-    @Environment(KMTheme.self) var theme
     var node: NodeData
     var status: NodeLiveStatus?
 
-    private let columns: [GridItem] = [.init(.flexible()), .init(.flexible())]
+    private var cpuUsage: Double { status?.cpuUsage ?? 0 }
+    private var gpuUsage: Double { status?.gpuUsage ?? 0 }
+
+    private var memoryPercent: Double {
+        guard let s = status, s.memoryTotal > 0 else { return 0 }
+        return Double(s.memoryUsed) / Double(s.memoryTotal) * 100
+    }
+
+    private var swapPercent: Double {
+        guard let s = status, s.swapTotal > 0 else { return 0 }
+        return Double(s.swapUsed) / Double(s.swapTotal) * 100
+    }
+
+    private var diskPercent: Double {
+        guard let s = status, s.diskTotal > 0 else { return 0 }
+        return Double(s.diskUsed) / Double(s.diskTotal) * 100
+    }
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 10) {
-                osCard
-                cpuCard
-                memoryCard
-                diskCard
-                networkCard
-                networkDataCard
-                networkAddressCard
+            VStack(spacing: 16) {
+                systemInfoSection
+                processorSection
+                resourcesSection
+                networkSection
+                addressSection
             }
             .padding()
         }
     }
 
-    @ViewBuilder
-    private func cardView<Content: View>(@ViewBuilder _ content: @escaping () -> Content) -> some View {
-        content()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(theme.themeSecondaryColor(scheme: scheme))
-                    .shadow(color: .black.opacity(0.08), radius: 5, x: 5, y: 5)
-                    .shadow(color: .black.opacity(0.06), radius: 5, x: -5, y: -5)
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: 180)
+    // MARK: - Card Container
+
+    private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+        )
     }
 
-    private var osCard: some View {
-        cardView {
-            VStack {
-                HStack {
-                    Label("OS", systemImage: "opticaldisc")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Spacer()
-                }
+    private func sectionHeader(_ title: String, systemImage: String) -> some View {
+        Label(title, systemImage: systemImage)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+    }
 
-                Spacer()
+    private func infoRow(_ label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+        }
+        .font(.subheadline)
+    }
 
-                VStack {
+    // MARK: - System Info
+
+    private var systemInfoSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionHeader("System", systemImage: "desktopcomputer")
+
+                // OS row with logo
+                HStack(spacing: 10) {
                     GetOSLogo.logo(for: node.os)
-                    Text(node.os.isEmpty ? String(localized: "Unknown") : node.os.capitalizeFirstLetter())
-                        .font(.caption)
-                        .lineLimit(2)
+                        .scaleEffect(0.6)
+                        .frame(width: 28, height: 28)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(GetOSLogo.name(for: node.os))
+                            .font(.headline)
+                        Text("\(node.arch) · \(node.kernelVersion)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
 
-                Spacer()
+                Divider()
 
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Load \(status?.load1 ?? 0, specifier: "%.2f") \(status?.load5 ?? 0, specifier: "%.2f") \(status?.load15 ?? 0, specifier: "%.2f")")
-                        Text("Processes \(status?.processCount ?? 0)")
+                if !node.virtualization.isEmpty {
+                    infoRow("Virtualization", value: node.virtualization)
+                }
+
+                if let status {
+                    infoRow("Uptime", value: formatTimeInterval(seconds: status.uptime))
+
+                    if status.temperature > 0 {
+                        HStack {
+                            Text("Temperature")
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(String(format: "%.1f°C", status.temperature))
+                                .foregroundStyle(temperatureColor(status.temperature))
+                        }
+                        .font(.subheadline)
                     }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    Spacer()
+
+                    infoRow("Load Average", value: String(format: "%.2f  %.2f  %.2f", status.load1, status.load5, status.load15))
+                    infoRow("Processes", value: "\(status.processCount)")
                 }
             }
-            .padding(10)
+            .padding(14)
         }
     }
 
-    private var cpuCard: some View {
-        cardView {
-            VStack {
-                HStack {
-                    Label("CPU", systemImage: "cpu")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+    // MARK: - CPU & GPU
+
+    private var processorSection: some View {
+        HStack(spacing: 12) {
+            // CPU
+            card {
+                VStack(alignment: .leading, spacing: 10) {
+                    sectionHeader("CPU", systemImage: "cpu")
                     Spacer()
+                    HStack(spacing: 8) {
+                        GetCPULogo.logo(for: node.cpuName)
+                            .frame(width: 28, height: 28)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(node.cpuName.isEmpty ? "Unknown" : node.cpuName)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .lineLimit(2)
+                            Text("\(node.cpuCores) Cores")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    UsageBar(label: "Usage", value: cpuUsage)
                 }
-
-                Spacer()
-
-                VStack {
-                    GetCPULogo.logo(for: node.cpuName)
-                    Text(node.cpuName.isEmpty ? "Unknown" : node.cpuName)
-                        .font(.caption)
-                        .lineLimit(2)
-                }
-
-                Spacer()
-
-                HStack {
-                    let cpuUsage = (status?.cpuUsage ?? 0) / 100
-                    Gauge(value: cpuUsage) {}
-                        .gaugeStyle(.accessoryLinearCapacity)
-                    Text("\(cpuUsage * 100, specifier: "%.0f")%")
-                }
-                .font(.caption)
+                .padding(14)
+                .frame(minHeight: 150)
             }
-            .padding(10)
+
+            // GPU
+            card {
+                VStack(alignment: .leading, spacing: 10) {
+                    sectionHeader("GPU", systemImage: "cpu")
+                    Spacer()
+                    HStack(spacing: 8) {
+                        GetGPULogo.logo(for: node.gpuName)
+                            .frame(width: 28, height: 28)
+                        Text(node.gpuName.isEmpty ? "N/A" : node.gpuName)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                    UsageBar(label: "Usage", value: gpuUsage)
+                }
+                .padding(14)
+                .frame(minHeight: 150)
+            }
         }
     }
 
-    private var memoryCard: some View {
-        cardView {
-            VStack {
-                let memoryUsage: Double = {
-                    guard let status, status.memoryTotal > 0 else { return 0 }
-                    return Double(status.memoryUsed) / Double(status.memoryTotal)
-                }()
+    // MARK: - Resources (Memory, Swap, Disk)
 
+    private var resourcesSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionHeader("Resources", systemImage: "gauge.with.dots.needle.33percent")
+
+                // Memory
+                UsageBar(label: "Memory", value: memoryPercent)
                 HStack {
-                    Label("Memory", systemImage: "memorychip")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Spacer()
-                }
-
-                Spacer()
-
-                HStack {
-                    Gauge(value: memoryUsage) {
-                        Text("\(memoryUsage * 100, specifier: "%.0f")%")
-                    }
-                    .gaugeStyle(.accessoryCircularCapacity)
-                    .tint(.accentColor)
-                }
-
-                Spacer()
-
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Used \(formatBytes(status?.memoryUsed ?? 0))")
-                        Text("Total \(formatBytes(status?.memoryTotal ?? node.memoryTotal))")
-                    }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    Spacer()
-                }
-            }
-            .padding(10)
-        }
-    }
-
-    private var diskCard: some View {
-        cardView {
-            VStack {
-                let diskUsage: Double = {
-                    guard let status, status.diskTotal > 0 else { return 0 }
-                    return Double(status.diskUsed) / Double(status.diskTotal)
-                }()
-
-                HStack {
-                    Label("Disk", systemImage: "internaldrive")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Spacer()
-                }
-
-                Spacer()
-
-                HStack {
-                    Gauge(value: diskUsage) {
-                        Text("\(diskUsage * 100, specifier: "%.0f")%")
-                    }
-                    .gaugeStyle(.accessoryCircularCapacity)
-                    .tint(.accentColor)
-                }
-
-                Spacer()
-
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Used \(formatBytes(status?.diskUsed ?? 0))")
-                        Text("Total \(formatBytes(status?.diskTotal ?? node.diskTotal))")
-                    }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    Spacer()
-                }
-            }
-            .padding(10)
-        }
-    }
-
-    private var networkCard: some View {
-        cardView {
-            VStack {
-                HStack {
-                    Label("Network Speed", systemImage: "network")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Spacer()
-                }
-
-                Spacer()
-
-                VStack(alignment: .leading) {
-                    Text("↑ \(formatBytes(status?.networkOutSpeed ?? 0))/s")
-                    Text("↓ \(formatBytes(status?.networkInSpeed ?? 0))/s")
-                }
-
-                Spacer()
-
-                HStack {
-                    HStack {
-                        Text("TCP \(status?.connectionCount ?? 0)")
-                        Text("UDP \(status?.connectionCountUDP ?? 0)")
-                    }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    Text("\(formatBytes(status?.memoryUsed ?? 0)) / \(formatBytes(status?.memoryTotal ?? node.memoryTotal))")
                     Spacer()
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .padding(.top, -6)
+
+                // Swap
+                if node.swapTotal > 0 || (status?.swapTotal ?? 0) > 0 {
+                    UsageBar(label: "Swap", value: swapPercent)
+                    HStack {
+                        Text("\(formatBytes(status?.swapUsed ?? 0)) / \(formatBytes(status?.swapTotal ?? node.swapTotal))")
+                        Spacer()
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, -6)
+                }
+
+                // Disk
+                UsageBar(label: "Disk", value: diskPercent)
+                HStack {
+                    Text("\(formatBytes(status?.diskUsed ?? 0)) / \(formatBytes(status?.diskTotal ?? node.diskTotal))")
+                    Spacer()
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.top, -6)
             }
-            .padding(10)
+            .padding(14)
         }
     }
 
-    private var networkDataCard: some View {
-        cardView {
-            VStack {
-                HStack {
-                    Label("Network Data", systemImage: "arrow.up.left.arrow.down.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Spacer()
-                }
+    // MARK: - Network
 
-                Spacer()
+    private var networkSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionHeader("Network", systemImage: "network")
 
-                VStack(alignment: .leading) {
-                    Text("↑ \(formatBytes(status?.networkOutTotal ?? 0))")
-                    Text("↓ \(formatBytes(status?.networkInTotal ?? 0))")
-                }
+                infoRow("Upload Speed", value: "\(formatBytes(status?.networkOutSpeed ?? 0))/s")
+                infoRow("Download Speed", value: "\(formatBytes(status?.networkInSpeed ?? 0))/s")
 
-                Spacer()
+                Divider()
+
+                infoRow("Total Upload", value: formatBytes(status?.networkOutTotal ?? 0))
+                infoRow("Total Download", value: formatBytes(status?.networkInTotal ?? 0))
+
+                Divider()
+
+                infoRow("TCP Connections", value: "\(status?.connectionCount ?? 0)")
+                infoRow("UDP Connections", value: "\(status?.connectionCountUDP ?? 0)")
             }
-            .padding(10)
+            .padding(14)
         }
     }
 
-    private var networkAddressCard: some View {
-        cardView {
-            VStack {
+    // MARK: - IP Address
+
+    private var addressSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Label("IP Address", systemImage: "pin.circle")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 5)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-
+                    sectionHeader("IP Address", systemImage: "globe")
                     Spacer()
-
                     CountryFlag(countryFlag: node.region)
                 }
 
-                Spacer()
-
-                VStack(alignment: .leading) {
-                    if let ipv4 = node.ipv4, !ipv4.isEmpty {
-                        HStack {
-                            Image(systemName: "4.circle")
-                            Text(ipv4)
-                        }
-                        .lineLimit(1)
-                    }
-                    if let ipv6 = node.ipv6, !ipv6.isEmpty {
-                        HStack {
-                            Image(systemName: "6.circle")
-                            Text(ipv6)
-                                .font(.caption)
-                        }
-                        .lineLimit(2)
+                if let ipv4 = node.ipv4, !ipv4.isEmpty {
+                    HStack(spacing: 8) {
+                        Text("IPv4")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(.blue))
+                        Text(ipv4)
+                            .font(.subheadline.monospaced())
+                            .lineLimit(1)
+                            .textSelection(.enabled)
                     }
                 }
 
-                Spacer()
+                if let ipv6 = node.ipv6, !ipv6.isEmpty {
+                    HStack(spacing: 8) {
+                        Text("IPv6")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(.purple))
+                        Text(ipv6)
+                            .font(.caption.monospaced())
+                            .lineLimit(2)
+                            .textSelection(.enabled)
+                    }
+                }
             }
-            .padding(10)
+            .padding(14)
         }
         .contextMenu {
             if let ipv4 = node.ipv4, !ipv4.isEmpty {
@@ -325,5 +302,13 @@ struct ServerDetailStatusView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Helpers
+
+    private func temperatureColor(_ temp: Double) -> Color {
+        if temp >= 80 { return .red }
+        if temp >= 60 { return .orange }
+        return .green
     }
 }

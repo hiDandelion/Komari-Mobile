@@ -8,26 +8,14 @@
 import SwiftUI
 import Charts
 
-enum MonitorPeriod: String, CaseIterable {
-    case oneHour = "1h"
+enum LoadPeriod: String, CaseIterable {
     case fourHours = "4h"
-    case oneDay = "24h"
+    case oneDay = "1d"
     case sevenDays = "7d"
     case thirtyDays = "30d"
 
-    var localizedTitle: String {
-        switch self {
-        case .oneHour: "1h"
-        case .fourHours: "4h"
-        case .oneDay: "24h"
-        case .sevenDays: "7d"
-        case .thirtyDays: "30d"
-        }
-    }
-
     var hours: Int {
         switch self {
-        case .oneHour: 1
         case .fourHours: 4
         case .oneDay: 24
         case .sevenDays: 168
@@ -37,10 +25,8 @@ enum MonitorPeriod: String, CaseIterable {
 }
 
 struct ServerDetailMonitorView: View {
-    @Environment(\.colorScheme) private var scheme
-    @Environment(KMTheme.self) var theme
     var node: NodeData
-    @State private var period: MonitorPeriod = .oneDay
+    @State private var period: LoadPeriod = .oneDay
     @State private var records: [NodeRecord] = []
     @State private var loadingState: LoadingState = .idle
 
@@ -56,7 +42,7 @@ struct ServerDetailMonitorView: View {
         return formatter
     }()
 
-    private static func parseDate(_ string: String) -> Date? {
+    static func parseDate(_ string: String) -> Date? {
         if let date = rfc3339Formatter.date(from: string) {
             return date
         }
@@ -66,21 +52,10 @@ struct ServerDetailMonitorView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                periodPicker
                 metricsSection
             }
             .padding()
-        }
-        .toolbar {
-            ToolbarItem {
-                Menu("Period", systemImage: "calendar") {
-                    Picker("Period", selection: $period) {
-                        ForEach(MonitorPeriod.allCases, id: \.rawValue) { p in
-                            Text(p.localizedTitle)
-                                .tag(p)
-                        }
-                    }
-                }
-            }
         }
         .onAppear {
             fetchRecords()
@@ -92,42 +67,48 @@ struct ServerDetailMonitorView: View {
         }
     }
 
+    private var periodPicker: some View {
+        Picker("Period", selection: $period) {
+            ForEach(LoadPeriod.allCases, id: \.rawValue) { p in
+                Text(p.rawValue)
+                    .tag(p)
+            }
+        }
+        .pickerStyle(.segmented)
+    }
+
     @ViewBuilder
     private var metricsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Metrics")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-
-            switch loadingState {
-            case .idle, .loading:
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 100)
-            case .loaded:
-                if records.isEmpty {
-                    Text("No Data")
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, minHeight: 100)
-                } else {
-                    VStack(spacing: 10) {
-                        cpuChart
-                        memoryChart
-                        diskChart
-                        networkInChart
-                        networkOutChart
-                    }
-                }
-            case .error(let message):
-                VStack(spacing: 10) {
-                    Text(message)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Button("Retry") {
-                        fetchRecords()
-                    }
-                }
+        switch loadingState {
+        case .idle, .loading:
+            ProgressView()
                 .frame(maxWidth: .infinity, minHeight: 100)
+        case .loaded:
+            if records.isEmpty {
+                Text("No Data")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 100)
+            } else {
+                VStack(spacing: 10) {
+                    cpuChart
+                    memoryChart
+                    diskChart
+                    networkSpeedChart
+                    connectionsChart
+                    processChart
+                    gpuChart
+                }
             }
+        case .error(let message):
+            VStack(spacing: 10) {
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Button("Retry") {
+                    fetchRecords()
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 100)
         }
     }
 
@@ -139,7 +120,7 @@ struct ServerDetailMonitorView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(theme.themeSecondaryColor(scheme: scheme))
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.08), radius: 5, x: 5, y: 5)
                 .shadow(color: .black.opacity(0.06), radius: 5, x: -5, y: -5)
         )
@@ -181,27 +162,81 @@ struct ServerDetailMonitorView: View {
         }
     }
 
-    private var networkInChart: some View {
-        let points = records.compactMap { record -> MetricsDataPoint? in
+    private var networkSpeedChart: some View {
+        let inPoints = records.compactMap { record -> MetricsDataPoint? in
             guard let netIn = record.networkIn,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
             return MetricsDataPoint(date: date, value: Double(netIn) / 1024)
         }
-        return chartCard {
-            MetricsChart(title: "Network In", dataPoints: points, unit: "KB/s", color: .purple)
-        }
-    }
-
-    private var networkOutChart: some View {
-        let points = records.compactMap { record -> MetricsDataPoint? in
+        let outPoints = records.compactMap { record -> MetricsDataPoint? in
             guard let netOut = record.networkOut,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
             return MetricsDataPoint(date: date, value: Double(netOut) / 1024)
         }
         return chartCard {
-            MetricsChart(title: "Network Out", dataPoints: points, unit: "KB/s", color: .red)
+            MetricsMultiSeriesChart(
+                title: "Network Speed",
+                series: [
+                    MetricsSeriesData(name: "In", dataPoints: inPoints, color: .purple),
+                    MetricsSeriesData(name: "Out", dataPoints: outPoints, color: .red)
+                ],
+                unit: "KB/s"
+            )
+        }
+    }
+
+    private var connectionsChart: some View {
+        let tcpPoints = records.compactMap { record -> MetricsDataPoint? in
+            guard let tcp = record.connectionCount,
+                  let timeStr = record.time,
+                  let date = Self.parseDate(timeStr) else { return nil }
+            return MetricsDataPoint(date: date, value: Double(tcp))
+        }
+        let udpPoints = records.compactMap { record -> MetricsDataPoint? in
+            guard let udp = record.connectionCountUDP,
+                  let timeStr = record.time,
+                  let date = Self.parseDate(timeStr) else { return nil }
+            return MetricsDataPoint(date: date, value: Double(udp))
+        }
+        return chartCard {
+            MetricsMultiSeriesChart(
+                title: "Connections",
+                series: [
+                    MetricsSeriesData(name: "TCP", dataPoints: tcpPoints, color: .blue),
+                    MetricsSeriesData(name: "UDP", dataPoints: udpPoints, color: .teal)
+                ],
+                unit: ""
+            )
+        }
+    }
+
+    private var processChart: some View {
+        let points = records.compactMap { record -> MetricsDataPoint? in
+            guard let process = record.processCount,
+                  let timeStr = record.time,
+                  let date = Self.parseDate(timeStr) else { return nil }
+            return MetricsDataPoint(date: date, value: Double(process))
+        }
+        return chartCard {
+            MetricsChart(title: "Process", dataPoints: points, unit: "", color: .pink)
+        }
+    }
+
+    @ViewBuilder
+    private var gpuChart: some View {
+        let hasGPU = records.contains { $0.gpuUsage != nil }
+        if hasGPU {
+            let points = records.compactMap { record -> MetricsDataPoint? in
+                guard let gpu = record.gpuUsage,
+                      let timeStr = record.time,
+                      let date = Self.parseDate(timeStr) else { return nil }
+                return MetricsDataPoint(date: date, value: Double(gpu))
+            }
+            chartCard {
+                MetricsChart(title: "GPU", dataPoints: points, unit: "%", color: .indigo)
+            }
         }
     }
 

@@ -71,3 +71,77 @@ struct MetricsChart: View {
         }
     }
 }
+
+struct MetricsSeriesData {
+    let name: String
+    let dataPoints: [MetricsDataPoint]
+    let color: Color
+}
+
+struct MetricsMultiSeriesChart: View {
+    let title: String
+    let series: [MetricsSeriesData]
+    let unit: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                Spacer()
+                ForEach(series, id: \.name) { s in
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(s.color)
+                            .frame(width: 8, height: 8)
+                        Text(s.name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.top, 10)
+
+            if series.allSatisfy({ $0.dataPoints.isEmpty }) {
+                Text("No Data")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                Chart {
+                    ForEach(series, id: \.name) { s in
+                        ForEach(s.dataPoints) { point in
+                            LineMark(
+                                x: .value("Time", point.date),
+                                y: .value(title, point.value),
+                                series: .value("Series", s.name)
+                            )
+                            .foregroundStyle(s.color)
+                            .interpolationMethod(.catmullRom)
+                        }
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .leading) { value in
+                        AxisGridLine()
+                        AxisValueLabel {
+                            if let v = value.as(Double.self) {
+                                Text("\(v, specifier: "%.0f")\(unit)")
+                                    .font(.caption2)
+                            }
+                        }
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks { _ in
+                        AxisGridLine()
+                        AxisValueLabel(format: .dateTime.hour())
+                    }
+                }
+                .frame(height: 150)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
+            }
+        }
+    }
+}

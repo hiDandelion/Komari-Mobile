@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(KMTheme.self) var theme
     @Environment(KMState.self) var state
 
     var body: some View {
@@ -17,12 +16,6 @@ struct SettingsView: View {
                 Section {
                     NavigationLink(value: "dashboard-settings") {
                         Text("Dashboard Settings")
-                    }
-                }
-
-                Section {
-                    NavigationLink(value: "theme-settings") {
-                        Text("Theme Settings")
                     }
                 }
 
@@ -38,8 +31,6 @@ struct SettingsView: View {
                 switch(target) {
                 case "dashboard-settings":
                     DashboardSettingsView()
-                case "theme-settings":
-                    ThemeSettingsView()
                 case "acknowledgments":
                     AcknowledgmentView()
                 default:

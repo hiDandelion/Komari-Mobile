@@ -12,127 +12,115 @@ struct ServerCard: View {
     let status: NodeLiveStatus?
     let isOnline: Bool
 
+    private var cpuUsage: Double {
+        status?.cpuUsage ?? 0
+    }
+
+    private var memoryUsagePercent: Double {
+        guard let status, status.memoryTotal > 0 else { return 0 }
+        return Double(status.memoryUsed) / Double(status.memoryTotal) * 100
+    }
+
+    private var diskUsagePercent: Double {
+        guard let status, status.diskTotal > 0 else { return 0 }
+        return Double(status.diskUsed) / Double(status.diskTotal) * 100
+    }
+
     var body: some View {
         VStack(spacing: 0) {
+            // Header: Flag + Name | Online/Offline badge
             HStack {
-                HStack {
-                    ServerTitle(node: node, isOnline: isOnline)
-                        .font(.callout)
-
-                    Spacer()
-
-                    if let status, isOnline {
-                        HStack {
-                            Image(systemName: "power")
-                            Text("\(formatTimeInterval(seconds: status.uptime))")
-                        }
-                        .font(.caption)
-                    }
-                }
+                ServerTitle(node: node, isOnline: isOnline)
+                    .font(.callout)
                 Spacer()
             }
-            .padding(.top, 5)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
 
-            VStack {
-                HStack(spacing: 0) {
-                    gaugeView
+            Divider()
+                .padding(.horizontal, 12)
 
-                    infoView
-                        .font(.caption2)
-                        .frame(width: 100)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.bottom, 5)
-            .padding(.horizontal, 10)
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
-    }
-
-    private var gaugeView: some View {
-        HStack {
-            let cpuUsage = (status?.cpuUsage ?? 0) / 100
-            let memoryUsage = {
-                guard let status, status.memoryTotal > 0 else { return 0.0 }
-                return Double(status.memoryUsed) / Double(status.memoryTotal)
-            }()
-            let diskUsage = {
-                guard let status, status.diskTotal > 0 else { return 0.0 }
-                return Double(status.diskUsed) / Double(status.diskTotal)
-            }()
-
-            VStack {
-                Gauge(value: cpuUsage) {
-
-                } currentValueLabel: {
-                    VStack {
-                        Text("CPU")
-                        Text("\(cpuUsage * 100, specifier: "%.0f")%")
+            // Content
+            VStack(spacing: 8) {
+                // OS row
+                HStack {
+                    Text("OS")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        GetOSLogo.logo(for: node.os)
+                            .scaleEffect(0.5)
+                            .frame(width: 20, height: 20)
+                        Text("\(GetOSLogo.name(for: node.os)) / \(node.arch)")
+                            .font(.subheadline)
+                            .lineLimit(1)
                     }
                 }
-                Text("\(node.cpuCores) Core")
-                    .font(.caption2)
-                    .frame(minWidth: 60)
-                    .lineLimit(1)
-            }
 
-            VStack {
-                Gauge(value: memoryUsage) {
+                // CPU
+                UsageBar(label: "CPU", value: cpuUsage)
 
-                } currentValueLabel: {
-                    VStack {
-                        Text("MEM")
-                        Text("\(memoryUsage * 100, specifier: "%.0f")%")
+                // RAM
+                UsageBar(label: "RAM", value: memoryUsagePercent)
+                if let status {
+                    Text("(\(formatBytes(status.memoryUsed)) / \(formatBytes(status.memoryTotal > 0 ? status.memoryTotal : node.memoryTotal)))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, -4)
+                }
+
+                // Disk
+                UsageBar(label: "Disk", value: diskUsagePercent)
+                if let status {
+                    Text("(\(formatBytes(status.diskUsed)) / \(formatBytes(status.diskTotal > 0 ? status.diskTotal : node.diskTotal)))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, -4)
+                }
+
+                // Total Traffic
+                HStack {
+                    Text("Total Traffic")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text("↑ \(formatBytes(status?.networkOutTotal ?? 0))  ↓ \(formatBytes(status?.networkInTotal ?? 0))")
+                        .font(.subheadline)
+                }
+
+                // Network Speed
+                HStack {
+                    Text("Network Speed")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text("↑ \(formatBytes(status?.networkOutSpeed ?? 0))/s  ↓ \(formatBytes(status?.networkInSpeed ?? 0))/s")
+                        .font(.subheadline)
+                }
+
+                // Uptime
+                HStack {
+                    Text("Uptime")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    if isOnline, let status {
+                        Text(formatTimeInterval(seconds: status.uptime))
+                            .font(.subheadline)
+                    } else {
+                        Text("-")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
-                Text("\(formatBytes(node.memoryTotal, decimals: 0))")
-                    .font(.caption2)
-                    .frame(minWidth: 60)
-                    .lineLimit(1)
             }
-
-            VStack {
-                Gauge(value: diskUsage) {
-
-                } currentValueLabel: {
-                    VStack {
-                        Text("DISK")
-                        Text("\(diskUsage * 100, specifier: "%.0f")%")
-                    }
-                }
-                Text("\(formatBytes(node.diskTotal, decimals: 0))")
-                    .font(.caption2)
-                    .frame(minWidth: 60)
-                    .lineLimit(1)
-            }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
         }
-        .gaugeStyle(.accessoryCircularCapacity)
-    }
-
-    private var infoView: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: "circle.dotted.circle")
-                    .frame(width: 10)
-                VStack(alignment: .leading) {
-                    Text("↑ \(formatBytes(status?.networkOutTotal ?? 0, decimals: 1))")
-                    Text("↓ \(formatBytes(status?.networkInTotal ?? 0, decimals: 1))")
-                }
-            }
-            .frame(alignment: .leading)
-
-            HStack {
-                Image(systemName: "network")
-                    .frame(width: 10)
-                VStack(alignment: .leading) {
-                    Text("↑ \(formatBytes(status?.networkOutSpeed ?? 0, decimals: 1))/s")
-                    Text("↓ \(formatBytes(status?.networkInSpeed ?? 0, decimals: 1))/s")
-                }
-            }
-            .frame(alignment: .leading)
-        }
-        .lineLimit(1)
-        .frame(minWidth: 100)
     }
 }

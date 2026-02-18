@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ServerListView: View {
-    @Environment(\.colorScheme) private var scheme
-    @Environment(KMTheme.self) var theme
     @Environment(KMState.self) var state
     @State private var backgroundImage: UIImage?
     @State private var sortIndicator: SortIndicator = .index
@@ -128,7 +126,7 @@ struct ServerListView: View {
                 }
                 .ignoresSafeArea()
             } else {
-                theme.themeBackgroundColor(scheme: scheme)
+                Color(UIColor.systemGroupedBackground)
                     .ignoresSafeArea()
             }
         }
@@ -209,17 +207,17 @@ struct ServerListView: View {
         }) {
             Text(group == nil ? String(localized: "All(\(state.nodes.count))") : group!)
                 .font(.callout)
-                .foregroundStyle(selectedGroup == group ? theme.themeActiveColor(scheme: scheme) : theme.themePrimaryColor(scheme: scheme))
+                .foregroundStyle(selectedGroup == group ? .white : .primary)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 15)
                 .background {
                     if selectedGroup == group {
                         Capsule()
-                            .fill(theme.themeTintColor(scheme: scheme))
+                            .fill(.tint)
                             .matchedGeometryEffect(id: "ACTIVETAG", in: tagNamespace)
                     } else {
                         Capsule()
-                            .fill(theme.themeSecondaryColor(scheme: scheme))
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
                     }
                 }
         }

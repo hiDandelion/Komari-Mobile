@@ -14,17 +14,14 @@ struct GetGPULogo {
             Image("AMDLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         } else if gpuName.lowercased().contains("apple") {
             Image("AppleLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         } else {
-            Image(systemName: "gpu")
+            Image(systemName: "cpu")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 40)
         }
     }
 }

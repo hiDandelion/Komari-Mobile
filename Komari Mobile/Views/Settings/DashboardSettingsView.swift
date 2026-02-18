@@ -60,12 +60,14 @@ struct DashboardSettingsView: View {
                     state.loadDashboard()
                     dismiss()
                 }
-
+            }
+            
+            Section {
                 Button("Test Connection") {
                     testConnection()
                 }
                 .disabled(isTesting)
-
+            } footer: {
                 if !testResult.isEmpty {
                     Text(testResult)
                         .font(.caption)

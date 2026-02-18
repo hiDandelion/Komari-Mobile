@@ -8,21 +8,18 @@
 import SwiftUI
 
 struct ServerCardView: View {
-    @Environment(\.colorScheme) private var scheme
-    @Environment(KMTheme.self) var theme
     let node: NodeData
     let status: NodeLiveStatus?
     let isOnline: Bool
 
     var body: some View {
         ServerCard(node: node, status: status, isOnline: isOnline)
-            .foregroundStyle(theme.themePrimaryColor(scheme: scheme))
+            .foregroundStyle(.primary)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(theme.themeSecondaryColor(scheme: scheme))
+                    .fill(Color(UIColor.secondarySystemGroupedBackground))
                     .shadow(color: .black.opacity(0.08), radius: 5, x: 5, y: 5)
                     .shadow(color: .black.opacity(0.06), radius: 5, x: -5, y: -5)
             )
-            .tint(theme.themeTintColor(scheme: scheme))
     }
 }

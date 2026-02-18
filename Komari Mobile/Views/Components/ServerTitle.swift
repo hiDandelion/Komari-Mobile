@@ -16,9 +16,22 @@ struct ServerTitle: View {
             CountryFlag(countryFlag: node.region)
 
             Text(node.name)
+                .fontWeight(.bold)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
-            Image(systemName: "circlebadge.fill")
+            Spacer()
+
+            Text(isOnline ? String(localized: "Online") : String(localized: "Offline"))
+                .font(.caption)
+                .fontWeight(.medium)
                 .foregroundStyle(isOnline ? .green : .red)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule()
+                        .fill(isOnline ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
+                )
         }
     }
 }

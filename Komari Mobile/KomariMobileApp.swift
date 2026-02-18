@@ -9,7 +9,6 @@ import SwiftUI
 
 @main
 struct KomariMobileApp: App {
-    var theme: KMTheme = .init()
     var state: KMState = .init()
 
     init() {
@@ -20,7 +19,6 @@ struct KomariMobileApp: App {
         WindowGroup {
             ContentView()
                 .environment(state)
-                .environment(theme)
         }
     }
 }

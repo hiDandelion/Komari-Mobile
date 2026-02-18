@@ -14,27 +14,22 @@ struct GetCPULogo {
             Image("AMDLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         } else if cpuName.lowercased().contains("intel") {
             Image("IntelLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         } else if cpuName.lowercased().contains("neoverse") {
             Image("ARMLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         } else if cpuName.lowercased().contains("apple") {
             Image("AppleLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         } else {
             Image(systemName: "cpu")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 40, height: 40)
         }
     }
 }

@@ -11,7 +11,8 @@ enum ServerDetailTab: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 
     case status = "Status"
-    case monitors = "Monitors"
+    case load = "Load"
+    case ping = "Ping"
 
     func localized() -> String {
         return NSLocalizedString(self.rawValue, comment: "")
@@ -19,8 +20,6 @@ enum ServerDetailTab: String, CaseIterable, Identifiable {
 }
 
 struct ServerDetailView: View {
-    @Environment(\.colorScheme) private var scheme
-    @Environment(KMTheme.self) var theme
     @Environment(KMState.self) var state
     var uuid: String
     @State private var activeTab: ServerDetailTab = .status
@@ -41,18 +40,6 @@ struct ServerDetailView: View {
                 }
                 .navigationTitle(node.name)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        Picker("Section", selection: $activeTab) {
-                            ForEach(ServerDetailTab.allCases) {
-                                Text($0.localized())
-                                    .tag($0)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .frame(width: 200)
-                    }
-                }
             } else {
                 ProgressView()
             }
@@ -61,14 +48,28 @@ struct ServerDetailView: View {
 
     private func content(node: NodeData, status: NodeLiveStatus?) -> some View {
         ZStack {
-            theme.themeBackgroundColor(scheme: scheme)
+            Color(UIColor.systemGroupedBackground)
                 .ignoresSafeArea()
 
-            switch(activeTab) {
-            case .status:
-                ServerDetailStatusView(node: node, status: status)
-            case .monitors:
-                ServerDetailMonitorView(node: node)
+            VStack {
+                Picker("Section", selection: $activeTab) {
+                    ForEach(ServerDetailTab.allCases) {
+                        Text($0.localized())
+                            .tag($0)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                
+                switch(activeTab) {
+                case .status:
+                    ServerDetailStatusView(node: node, status: status)
+                case .load:
+                    ServerDetailMonitorView(node: node)
+                case .ping:
+                    PingChartView(node: node)
+                }
             }
         }
     }
