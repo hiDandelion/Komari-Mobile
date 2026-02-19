@@ -11,7 +11,7 @@ struct ServerListView: View {
     @Environment(KMState.self) var state
     @State private var backgroundImage: UIImage?
     @State private var sortIndicator: SortIndicator = .index
-    @State private var sortOrder: SortOrder = .descending
+    @State private var sortOrder: SortOrder = .ascending
     @State private var searchText: String = ""
     @State private var selectedGroup: String?
     @Namespace private var tagNamespace
