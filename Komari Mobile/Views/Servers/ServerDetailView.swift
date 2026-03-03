@@ -23,6 +23,7 @@ struct ServerDetailView: View {
     @Environment(KMState.self) var state
     var uuid: String
     @State private var activeTab: ServerDetailTab = .status
+    @State private var isShowEditServer: Bool = false
 
     var body: some View {
         let node = state.nodes.first(where: { $0.uuid == uuid })
@@ -43,6 +44,18 @@ struct ServerDetailView: View {
                 .animation(.smooth(duration: 0.3), value: isOnline)
                 .navigationTitle(node.name)
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            isShowEditServer = true
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                    }
+                }
+                .sheet(isPresented: $isShowEditServer) {
+                    EditServerView(node: node)
+                }
             } else {
                 ProgressView()
             }

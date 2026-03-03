@@ -104,7 +104,7 @@ class KMState {
             guard !Task.isCancelled else { return }
 
             withAnimation {
-                self.nodes = Array(nodesMap.values).sorted { $0.weight > $1.weight }
+                self.nodes = Array(nodesMap.values).sorted { $0.weight < $1.weight }
             }
         }
 

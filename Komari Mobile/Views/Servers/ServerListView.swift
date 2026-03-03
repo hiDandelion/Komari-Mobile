@@ -18,6 +18,14 @@ struct ServerListView: View {
 
     @State private var isShowDeleteServerAlert: Bool = false
     @State private var serverToDelete: NodeData?
+    @State private var isShowAddServer: Bool = false
+    @State private var isShowEditServer: Bool = false
+    @State private var serverToEdit: NodeData?
+
+    @State private var isReordering: Bool = false
+    @State private var reorderableNodes: [NodeData] = []
+    @State private var isSavingOrder: Bool = false
+    @State private var reorderError: String?
 
     private func memoryUsage(for status: NodeLiveStatus?) -> Double {
         guard let s = status, s.memoryTotal > 0 else { return 0 }
@@ -37,7 +45,7 @@ struct ServerListView: View {
             if a.weight == b.weight {
                 return sortOrder == .ascending ? a.uuid < b.uuid : a.uuid > b.uuid
             }
-            return a.weight > b.weight
+            return a.weight < b.weight
         case .uptime:
             let va: Int64 = statusA?.uptime ?? 0
             let vb: Int64 = statusB?.uptime ?? 0
@@ -134,30 +142,100 @@ struct ServerListView: View {
 
     private var dashboard: some View {
         Group {
-            ScrollView {
-                if !state.groupNames.isEmpty {
-                    groupPicker
-                        .safeAreaPadding(.horizontal, 15)
-                        .padding(.bottom, 5)
-                }
+            if isReordering {
+                reorderList
+                    .navigationTitle("Reorder Servers")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            if #available(iOS 26.0, *) {
+                                Button(role: .cancel) {
+                                    withAnimation { isReordering = false }
+                                } label: {
+                                    Label("Cancel", systemImage: "xmark")
+                                }
+                                .disabled(isSavingOrder)
+                            } else {
+                                Button("Cancel", role: .cancel) {
+                                    withAnimation { isReordering = false }
+                                }
+                                .disabled(isSavingOrder)
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            if isSavingOrder {
+                                ProgressView()
+                            } else {
+                                if #available(iOS 26.0, *) {
+                                    Button(role: .confirm) {
+                                        saveReorder()
+                                    } label: {
+                                        Label("Done", systemImage: "checkmark")
+                                    }
+                                } else {
+                                    Button("Done") {
+                                        saveReorder()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .alert("Reorder Failed", isPresented: Binding(get: { reorderError != nil }, set: { if !$0 { reorderError = nil } })) {
+                        Button("OK", role: .cancel) {}
+                    } message: {
+                        Text(reorderError ?? "")
+                    }
+            } else {
+                ScrollView {
+                    if !state.groupNames.isEmpty {
+                        groupPicker
+                            .safeAreaPadding(.horizontal, 15)
+                            .padding(.bottom, 5)
+                    }
 
-                serverList
-            }
-            .navigationTitle("Servers")
-            .searchable(text: $searchText)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    moreButton
+                    serverList
                 }
-            }
-            .loadingState(loadingState: state.dashboardLoadingState) {
-                state.loadDashboard()
+                .navigationTitle("Servers")
+                .searchable(text: $searchText)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            isShowAddServer = true
+                        } label: {
+                            Label("Add Server", systemImage: "plus")
+                        }
+                    }
+                    if #available(iOS 26.0, *) {
+                        ToolbarSpacer(.fixed)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        moreButton
+                    }
+                }
+                .sheet(isPresented: $isShowAddServer) {
+                    Task { await state.refreshAll() }
+                } content: {
+                    AddServerView()
+                }
+                .sheet(item: $serverToEdit) { node in
+                    EditServerView(node: node)
+                }
+                .loadingState(loadingState: state.dashboardLoadingState) {
+                    state.loadDashboard()
+                }
             }
         }
     }
 
     private var moreButton: some View {
         Menu("More", systemImage: "ellipsis") {
+            Button {
+                reorderableNodes = state.nodes.sorted { $0.weight < $1.weight }
+                withAnimation { isReordering = true }
+            } label: {
+                Label("Reorder", systemImage: "arrow.up.arrow.down")
+            }
+            .disabled(state.nodes.count < 2)
+
             Picker("Sort", selection: Binding(get: {
                 sortIndicator
             }, set: { newValue in
@@ -243,6 +321,11 @@ struct ServerListView: View {
                                 state.pathServers.append(node)
                             }
                             .contextMenu {
+                                Button {
+                                    serverToEdit = node
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
                                 if let ipv4 = node.ipv4, !ipv4.isEmpty {
                                     Button {
                                         UIPasteboard.general.string = ipv4
@@ -270,6 +353,39 @@ struct ServerListView: View {
             } else {
                 ContentUnavailableView("No Server", systemImage: "square.stack.3d.up.slash.fill")
             }
+        }
+    }
+
+    private var reorderList: some View {
+        List {
+            ForEach(reorderableNodes) { node in
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(state.onlineUUIDs.contains(node.uuid) ? .green : .secondary)
+                        .frame(width: 8, height: 8)
+                    Text(node.name)
+                        .lineLimit(1)
+                }
+            }
+            .onMove { source, destination in
+                reorderableNodes.move(fromOffsets: source, toOffset: destination)
+            }
+        }
+        .environment(\.editMode, .constant(.active))
+    }
+
+    private func saveReorder() {
+        isSavingOrder = true
+        Task {
+            do {
+                let uuids = reorderableNodes.map(\.uuid)
+                try await AdminHandler.reorderClients(uuids: uuids)
+                await state.refreshAll()
+                withAnimation { isReordering = false }
+            } catch {
+                reorderError = error.localizedDescription
+            }
+            isSavingOrder = false
         }
     }
 }

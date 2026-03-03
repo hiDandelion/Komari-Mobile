@@ -14,6 +14,12 @@
         }
       }
     },
+    "/;/home;/var" : {
+
+    },
+    "/opt/komari-agent" : {
+
+    },
     "%.0f%@" : {
       "localizations" : {
         "en" : {
@@ -36,6 +42,25 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%.0f毫秒"
+          }
+        }
+      }
+    },
+    "%.1f" : {
+
+    },
+    "%.1f%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$.1f%2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$.1f%2$@"
           }
         }
       }
@@ -85,6 +110,16 @@
         }
       }
     },
+    "%lld min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld分钟"
+          }
+        }
+      }
+    },
     "%lld ms" : {
       "localizations" : {
         "zh-Hans" : {
@@ -97,6 +132,16 @@
     },
     "%lld%%" : {
 
+    },
+    "%llds" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld秒"
+          }
+        }
+      }
     },
     "🇼🇸" : {
       "localizations" : {
@@ -128,12 +173,82 @@
         }
       }
     },
+    "Add" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加"
+          }
+        }
+      }
+    },
+    "Add a load alert to monitor server resource usage." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加负载告警以监控服务器资源使用情况。"
+          }
+        }
+      }
+    },
+    "Add a ping task to monitor network connectivity." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加Ping任务以监控网络连接。"
+          }
+        }
+      }
+    },
+    "Add Alert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加告警"
+          }
+        }
+      }
+    },
     "Add Dashboard" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "添加Dashboard"
+          }
+        }
+      }
+    },
+    "Add Server" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加服务器"
+          }
+        }
+      }
+    },
+    "Add Task" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加任务"
+          }
+        }
+      }
+    },
+    "Alert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "告警"
           }
         }
       }
@@ -158,12 +273,42 @@
         }
       }
     },
+    "Annual" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年付"
+          }
+        }
+      }
+    },
     "API Key" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "API Key"
+          }
+        }
+      }
+    },
+    "App Settings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用设置"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete \"%@\"?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你确定要删除\"%@\"吗？"
           }
         }
       }
@@ -198,6 +343,16 @@
         }
       }
     },
+    "Auto Renewal" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动续费"
+          }
+        }
+      }
+    },
     "avg %lld ms" : {
       "localizations" : {
         "zh-Hans" : {
@@ -208,12 +363,62 @@
         }
       }
     },
+    "Basic" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基本"
+          }
+        }
+      }
+    },
+    "Biennial" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两年付"
+          }
+        }
+      }
+    },
+    "Billing" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "计费"
+          }
+        }
+      }
+    },
+    "Billing Cycle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "计费周期"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消"
+          }
+        }
+      }
+    },
+    "Command" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令"
           }
         }
       }
@@ -238,12 +443,32 @@
         }
       }
     },
+    "Copied!" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制！"
+          }
+        }
+      }
+    },
     "Copy" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "复制"
+          }
+        }
+      }
+    },
+    "Copy Command" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制命令"
           }
         }
       }
@@ -274,6 +499,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "CPU"
+          }
+        }
+      }
+    },
+    "Currency" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "货币"
+          }
+        }
+      }
+    },
+    "Custom Install Directory" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义安装目录"
+          }
+        }
+      }
+    },
+    "Custom Service Name" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义服务名称"
+          }
+        }
+      }
+    },
+    "Dashboard Administration" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard管理"
           }
         }
       }
@@ -328,6 +593,16 @@
         }
       }
     },
+    "Day (1-31)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日（1-31）"
+          }
+        }
+      }
+    },
     "Default" : {
       "localizations" : {
         "zh-Hans" : {
@@ -348,6 +623,16 @@
         }
       }
     },
+    "Delete Alert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除告警"
+          }
+        }
+      }
+    },
     "Delete Server" : {
       "localizations" : {
         "zh-Hans" : {
@@ -358,12 +643,52 @@
         }
       }
     },
+    "Delete Task" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除任务"
+          }
+        }
+      }
+    },
     "Descending" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "降序"
+          }
+        }
+      }
+    },
+    "Disable Auto Update" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用自动更新"
+          }
+        }
+      }
+    },
+    "Disable Web SSH" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用Web SSH"
+          }
+        }
+      }
+    },
+    "Disabled" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用"
           }
         }
       }
@@ -398,12 +723,92 @@
         }
       }
     },
+    "Edit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑"
+          }
+        }
+      }
+    },
+    "Edit Alert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑告警"
+          }
+        }
+      }
+    },
+    "Edit Notification" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑通知"
+          }
+        }
+      }
+    },
+    "Edit Server" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑服务器"
+          }
+        }
+      }
+    },
+    "Edit Task" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑任务"
+          }
+        }
+      }
+    },
     "Enable SSL" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "启用SSL"
+          }
+        }
+      }
+    },
+    "Enable Traffic Limit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用流量限制"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用"
+          }
+        }
+      }
+    },
+    "Enter a name for the new server. You can leave it empty." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入新服务器的名称。可以留空。"
           }
         }
       }
@@ -418,12 +823,178 @@
         }
       }
     },
+    "Error" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "错误"
+          }
+        }
+      }
+    },
+    "eth0,eth1" : {
+
+    },
+    "Exclude NICs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "排除网卡"
+          }
+        }
+      }
+    },
+    "Expiration Date" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "到期日期"
+          }
+        }
+      }
+    },
+    "Expires" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "到期"
+          }
+        }
+      }
+    },
     "Get Started" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "立即开始"
+          }
+        }
+      }
+    },
+    "GitHub Proxy" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub代理"
+          }
+        }
+      }
+    },
+    "Grace Period (seconds)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宽限期（秒）"
+          }
+        }
+      }
+    },
+    "Grace period is the number of seconds to wait before sending a notification after the server goes offline." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宽限期是指服务器离线后，等待多少秒才发送离线通知。"
+          }
+        }
+      }
+    },
+    "Group" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分组"
+          }
+        }
+      }
+    },
+    "Hidden" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏"
+          }
+        }
+      }
+    },
+    "https://ghfast.top/" : {
+
+    },
+    "Ignore Unsafe Cert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略不安全证书"
+          }
+        }
+      }
+    },
+    "Include Mount Points" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "包含挂载点"
+          }
+        }
+      }
+    },
+    "Include NICs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "包含网卡"
+          }
+        }
+      }
+    },
+    "Install Agent" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装Agent"
+          }
+        }
+      }
+    },
+    "Install Options" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装选项"
+          }
+        }
+      }
+    },
+    "Interval (minutes)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "间隔（分钟）"
+          }
+        }
+      }
+    },
+    "Interval (seconds)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "间隔（秒）"
           }
         }
       }
@@ -448,12 +1019,28 @@
         }
       }
     },
+    "komari-agent" : {
+
+    },
     "Latency" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "延迟"
+          }
+        }
+      }
+    },
+    "lo" : {
+
+    },
+    "Load Alerts" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "负载告警"
           }
         }
       }
@@ -468,12 +1055,72 @@
         }
       }
     },
+    "Max" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大"
+          }
+        }
+      }
+    },
     "Memory" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "内存"
+          }
+        }
+      }
+    },
+    "Memory Include Cache" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "内存包含缓存"
+          }
+        }
+      }
+    },
+    "Metric" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "监控项"
+          }
+        }
+      }
+    },
+    "Min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最小"
+          }
+        }
+      }
+    },
+    "Monthly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月付"
+          }
+        }
+      }
+    },
+    "Monthly Network Reset" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月网络重置"
           }
         }
       }
@@ -488,12 +1135,52 @@
         }
       }
     },
+    "Name" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称"
+          }
+        }
+      }
+    },
+    "Never" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从未触发"
+          }
+        }
+      }
+    },
     "No Data" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "无数据"
+          }
+        }
+      }
+    },
+    "No Load Alerts" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无负载告警"
+          }
+        }
+      }
+    },
+    "No Ping Tasks" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无Ping任务"
           }
         }
       }
@@ -508,12 +1195,82 @@
         }
       }
     },
+    "No Servers" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无服务器"
+          }
+        }
+      }
+    },
+    "No servers available" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无可用服务器"
+          }
+        }
+      }
+    },
+    "No servers available to configure offline notifications." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无可用服务器来配置离线通知。"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        }
+      }
+    },
     "Offline" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "离线"
+          }
+        }
+      }
+    },
+    "Offline Notifications" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "离线通知"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好"
+          }
+        }
+      }
+    },
+    "One-Time" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次性"
           }
         }
       }
@@ -587,12 +1344,132 @@
         }
       }
     },
+    "Ping Tasks" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ping任务"
+          }
+        }
+      }
+    },
+    "Platform" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平台"
+          }
+        }
+      }
+    },
+    "Price" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "价格"
+          }
+        }
+      }
+    },
+    "Private Remark" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私有备注"
+          }
+        }
+      }
+    },
+    "Public Remark" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公开备注"
+          }
+        }
+      }
+    },
+    "Quarterly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "季付"
+          }
+        }
+      }
+    },
+    "Quinquennial" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "五年付"
+          }
+        }
+      }
+    },
+    "Ratio (0-1)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时间占比（0-1）"
+          }
+        }
+      }
+    },
     "Real-time Monitoring" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "实时监控"
+          }
+        }
+      }
+    },
+    "Remarks" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "备注"
+          }
+        }
+      }
+    },
+    "Reorder" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新排序"
+          }
+        }
+      }
+    },
+    "Reorder Failed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新排序失败"
+          }
+        }
+      }
+    },
+    "Reorder Servers" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新排序服务器"
           }
         }
       }
@@ -627,12 +1504,42 @@
         }
       }
     },
+    "Semi-Annual" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "半年付"
+          }
+        }
+      }
+    },
     "Series" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "系列"
+          }
+        }
+      }
+    },
+    "Server" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器"
+          }
+        }
+      }
+    },
+    "Server Name" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器名称"
           }
         }
       }
@@ -697,6 +1604,26 @@
         }
       }
     },
+    "Sum" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "总和"
+          }
+        }
+      }
+    },
+    "Tags (semicolon-separated)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "标签（分号分隔）"
+          }
+        }
+      }
+    },
     "Task" : {
       "localizations" : {
         "zh-Hans" : {
@@ -730,12 +1657,32 @@
     "This project is subject to\nMIT License" : {
       "shouldTranslate" : false
     },
+    "Threshold (%@)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阈值（%@）"
+          }
+        }
+      }
+    },
     "Time" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "时间"
+          }
+        }
+      }
+    },
+    "Token" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "令牌"
           }
         }
       }
@@ -756,6 +1703,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "流量"
+          }
+        }
+      }
+    },
+    "Traffic Limit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "流量限制"
+          }
+        }
+      }
+    },
+    "Triennial" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三年付"
+          }
+        }
+      }
+    },
+    "Type" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "类型"
+          }
+        }
+      }
+    },
+    "Unit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "单位"
           }
         }
       }
@@ -816,6 +1803,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用户名"
+          }
+        }
+      }
+    },
+    "UUID" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UUID"
+          }
+        }
+      }
+    },
+    "Value" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "值"
           }
         }
       }
