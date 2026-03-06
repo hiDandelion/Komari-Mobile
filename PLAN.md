@@ -1,197 +1,205 @@
-# Missing Admin Features: komari-web vs Komari Mobile
+# Komari Mobile — Admin Feature Parity with komari-web
 
-## Investigation Summary
+## Overview
 
-Compared every admin feature in **komari-web** (`/Volumes/Work/komari-web/src/pages/admin/`) against **Komari Mobile** (`/Volumes/Work/Komari-Mobile/Komari Mobile/`). Features are listed by priority tier (mobile-appropriate first, then desktop-oriented).
-
----
-
-## Legend
-
-- **In Mobile**: Feature exists in Komari Mobile
-- **API Ready**: AdminHandler.swift already has the API call but no UI
-- **Missing**: Neither API nor UI exists
+This document maps every admin page in **komari-web** (sidebar menu structure from `menuConfig.json`) to its implementation status in **Komari Mobile**. The goal is to replicate komari-web's admin structure in the mobile app's Settings tab.
 
 ---
 
-## 1. Add Server/Node — MISSING
+## komari-web Admin Sidebar Structure
 
-**Web:** `/admin` index page, "Add" button
-**API:** `POST /api/admin/client/add` with `{ name: string }`
-**Web details:** Simple dialog with name input, creates new node and generates installation command.
+```
+Server (/admin)                         → Servers tab (fully implemented)
 
-**What to implement:**
-- Add button in ServerListView toolbar
-- Sheet/dialog with name input
-- On success, show the new node's token for agent installation
-- Generate installation commands for Linux/Windows/macOS (with options: disable web SSH, disable auto-update, ignore unsafe certs, memory include cache, GitHub proxy, custom install dir, custom service name, NIC include/exclude, mount points, monthly network reset)
+Settings (/admin/settings)
+├── Site Settings (/settings/site)
+├── Theme (/settings/theme)
+├── Sign-On / SSO (/settings/sign-on)
+├── Notification Provider (/settings/notification)
+└── General Settings (/settings/general)
 
-**API to add:** `AdminHandler.addClient(name:)` → `POST /api/admin/client/add`
-**Models needed:** Response returns newly created `NodeData` with token
+Notifications (/admin/notification)
+├── Offline Notifications (/notification/offline)
+├── Load Notifications (/notification/load)
+└── General Notifications (/notification/general)
 
----
-
-## 2. Edit Server/Node — API READY, NO UI
-
-**Web:** `/admin` index page, edit dialog per node
-**API:** `POST /api/admin/client/{uuid}/edit` — already in `AdminHandler.editClient(uuid:changes:)`
-**Web details:** Full edit form with fields:
-- Name
-- Token (read-only display)
-- Tags (comma-separated)
-- Group
-- Private Remark
-- Public Remark
-- Hidden toggle
-- Traffic Limit (bytes) + Traffic Limit Type (sum/max/min/up/down)
-- Billing: Price, Billing Cycle (monthly/quarterly/semi-annual/annual/biennial/triennial/quinquennial/one-time), Currency, Expiration Date, Auto-renewal toggle
-
-**What to implement:**
-- Edit button/context menu in server detail view or server card
-- Sheet with form fields matching the web edit dialog
-- Save calls existing `AdminHandler.editClient(uuid:changes:)`
+Exec (/admin/exec)
+Ping Task (/admin/ping)
+Sessions (/admin/sessions)
+Account (/admin/account)
+Logs (/admin/logs)
+```
 
 ---
 
-## 3. Reorder Servers — API READY, NO UI
+## Current Komari Mobile Settings Structure
 
-**Web:** Drag-and-drop reorder on `/admin` index
-**API:** `POST /api/admin/client/order` — already in `AdminHandler.reorderClients(uuids:)`
-**Web details:** Drag nodes to reorder, sends `{ uuid: index }` mapping.
-
-**What to implement:**
-- Edit mode in ServerListView with drag handles
-- Use SwiftUI `onMove` or `EditButton` pattern
-- On reorder, call `AdminHandler.reorderClients(uuids:)`
+```
+Settings tab
+├── App Settings
+│   └── Dashboard Settings              ✅ Implemented
+├── Dashboard Administration
+│   ├── Ping Tasks                      ✅ Implemented
+│   ├── Load Alerts                     ✅ Implemented
+│   └── Offline Notifications           ✅ Implemented
+└── About
+    ├── User Guide (link)               ✅ Implemented
+    └── Acknowledgments                 ✅ Implemented
+```
 
 ---
 
-## 4. Ping Task Management — MISSING
+## Proposed Komari Mobile Settings Structure (matching komari-web)
 
-**Web:** `/admin/ping` — full CRUD for ping monitoring tasks
-**API endpoints:**
-- `POST /api/admin/ping/add` — `{ name, type, target, clients: [uuid...], interval }`
-- `POST /api/admin/ping/edit` — same params + `{ id }`
-- `POST /api/admin/ping/delete` — `{ id }`
+```
+Settings tab
+├── App Settings
+│   └── Dashboard Settings              ✅ Implemented
+│
+├── Settings (mirrors /admin/settings)
+│   ├── Site Settings                   ❌ Missing (#13)
+│   ├── Theme                           ❌ Missing (#15) — Low priority
+│   ├── Sign-On / SSO                   ❌ Missing (#14) — Low priority
+│   ├── Notification Provider           ❌ Missing (#7)
+│   └── General Settings                ❌ Missing (#12)
+│
+├── Notifications (mirrors /admin/notification)
+│   ├── Offline Notifications           ✅ Implemented
+│   ├── Load Alerts                     ✅ Implemented
+│   └── General Notifications           ✅ Implemented
+│
+├── Administration
+│   ├── Ping Tasks                      ✅ Implemented
+│   ├── Remote Exec                     ✅ Implemented
+│   ├── Sessions                        ✅ Implemented
+│   ├── Account                         ✅ Implemented
+│   └── Logs                            ✅ Implemented
+│
+└── About
+    ├── User Guide (link)               ✅ Implemented
+    └── Acknowledgments                 ✅ Implemented
+```
+
+---
+
+## Feature Details
+
+### ✅ IMPLEMENTED
+
+#### Ping Tasks
+- **View:** `PingTasksView.swift`
+- **API:** `AdminHandler.getPingTasks()`, `addPingTask()`, `editPingTask()`, `deletePingTasks()`
+- **Model:** `PingTask` in `PingTaskResponse.swift`
+- Full CRUD with ICMP/TCP/HTTP types, client selector, swipe actions
+
+#### Load Alerts
+- **View:** `LoadAlertsView.swift`
+- **API:** `AdminHandler.getLoadAlerts()`, `addLoadAlert()`, `editLoadAlert()`, `deleteLoadAlerts()`
+- **Model:** `LoadAlert` in `LoadAlertResponse.swift`
+- Full CRUD with 5 metrics (CPU/RAM/Disk/Net In/Net Out), threshold, ratio, interval
+
+#### Offline Notifications
+- **View:** `OfflineNotificationsView.swift`
+- **API:** `AdminHandler.getOfflineNotifications()`, `editOfflineNotifications()`
+- **Model:** `OfflineNotification` in `OfflineNotificationResponse.swift`
+- Per-node enable/disable + grace period configuration
+
+#### General Notifications
+- **View:** `GeneralNotificationsView.swift`
+- **API:** `AdminHandler.getSettings()`, `AdminHandler.updateSettings(changes:)`
+- **Model:** `DashboardSettings` in `SettingsResponse.swift`
+- Expiration notification toggle + lead days, login notification toggle, traffic alert percentage
+
+#### Sessions
+- **View:** `SessionsView.swift`
+- **API:** `AdminHandler.getSessions()`, `AdminHandler.removeSession(session:)`, `AdminHandler.removeAllSessions()`
+- **Model:** `SessionInfo` in `SessionResponse.swift`
+- Session list with current session badge, IP addresses, login method, timestamps
+- Swipe-to-delete individual sessions, "Revoke All" toolbar button with confirmation
+
+#### Server Management (Servers tab, not Settings)
+- Add Server + install command generation
+- Edit Server (name, tags, group, remarks, billing, traffic limit)
+- Delete Server
+- Reorder Servers
+
+---
+
+### ❌ MISSING FEATURES
+
+---
+
+#### #6b. General Notifications — IMPLEMENTED
+
+**Web:** `/admin/notification/general` — global notification toggles
+**API:** `GET /api/admin/settings` + `POST /api/admin/settings` (shared settings endpoint)
 
 **Web details:**
-- Dual view: Task View (organized by task) and Server View (organized by server)
-- Ping types: ICMP, TCP, HTTP
-- Target: IP/hostname/URL depending on type
-- Interval: seconds between pings
-- Client selection: multi-select which nodes perform the ping
-- Disk usage estimation calculator
+- Expiration Notification: enable/disable toggle + lead days (how many days before expiration to notify)
+- Login Notification: enable/disable toggle (notify on admin login)
+- Traffic Alert: threshold percentage (notify when traffic reaches X% of limit)
 
 **What to implement:**
-- New "Ping Tasks" section (in settings or as admin tab)
-- List all ping tasks with name, type, target, interval, assigned clients
-- Add task sheet: name, type picker, target, interval, multi-select clients
-- Edit task sheet (same form, pre-filled)
-- Swipe-to-delete
-- Models: `PingTask` struct for CRUD
-- API: `AdminHandler.addPingTask(...)`, `AdminHandler.editPingTask(...)`, `AdminHandler.deletePingTask(...)`
+- New "General" item in Notifications section
+- Toggle for expiration notification + lead days number field
+- Toggle for login notification
+- Number field for traffic alert percentage
+- API: `AdminHandler.getSettings()` (shared), `AdminHandler.updateSettings(changes:)` (shared)
+
+**Complexity:** Low
 
 ---
 
-## 5. Load Alert Notifications — MISSING
+#### #7. Notification Provider Settings — MISSING
 
-**Web:** `/admin/notification/load` — alert rules for CPU/Memory/Disk thresholds
-**API endpoints:**
-- `POST /api/admin/notification/load/add` — `{ name, metric, threshold, ratio, interval, uuid (node) }`
-- `POST /api/admin/notification/load/edit` — same params + `{ id }`
-- `POST /api/admin/notification/load/delete` — `{ id }`
-
-**Web details:**
-- Table of alert rules with: Name, Server, Metric (cpu/memory/disk), Threshold (%), Ratio, Interval
-- Add/edit dialog with all fields + node selector
-- Delete with confirmation
-
-**What to implement:**
-- New "Load Alerts" section (in notification settings)
-- List existing alerts
-- Add/edit sheet with: name, metric picker, threshold slider/field, ratio, interval, node selector
-- Swipe-to-delete
-- Models: `LoadAlert` struct
-- API: `AdminHandler.addLoadAlert(...)`, `AdminHandler.editLoadAlert(...)`, `AdminHandler.deleteLoadAlert(...)`
-
----
-
-## 6. Offline Notification Settings — MISSING
-
-**Web:** `/admin/notification/offline` — configures notifications when servers go offline
-**API:** `POST /api/admin/notification/offline/edit` — `{ enable, cooldown, grace_period }`
-
-**Web details:**
-- Enable/disable toggle
-- Grace period (seconds before triggering notification)
-- Cooldown (milliseconds between repeated notifications, default 3000)
-- Per-node configuration toggles
-
-**What to implement:**
-- "Offline Notifications" section in settings
-- Toggle, grace period field, cooldown field
-- Per-node enable/disable list
-- API: `AdminHandler.editOfflineNotification(...)`
-
----
-
-## 7. Notification Provider Settings — MISSING
-
-**Web:** `/admin/settings/notification` — configure how notifications are sent
-**API endpoints:**
+**Web:** `/admin/settings/notification` — configure how notifications are delivered
+**API:**
 - `GET /api/admin/settings/message-sender` — list available providers
 - `GET /api/admin/settings/message-sender?provider={name}` — get provider config
 - `POST /api/admin/settings/message-sender` — save provider config
-- `POST /api/admin/test/sendMessage` — test message
+- `POST /api/admin/test/sendMessage` — test notification delivery
 
 **Web details:**
-- Provider selector (e.g., Telegram, Discord, email, webhook, etc.)
-- Dynamic form fields based on selected provider
+- Provider selector (e.g., Telegram, Discord, email, webhook, Bark, Gotify, etc.)
+- Dynamic form fields based on selected provider (each has different config: bot token, chat ID, webhook URL, etc.)
 - Enable/disable toggle
 - Custom notification template
 - Test message button
 
 **What to implement:**
-- "Notification Provider" section in settings
+- New "Notification Provider" item in Settings section
 - Provider picker
-- Dynamic form (each provider has different fields)
-- Test button
-- API: `AdminHandler.getMessageSenders()`, `AdminHandler.saveMessageSender(...)`, `AdminHandler.testMessage()`
+- Dynamic form fields per provider
+- Enable/disable toggle
+- Test message button
+- API: `AdminHandler.getMessageSenders()`, `AdminHandler.getMessageSenderConfig(provider:)`, `AdminHandler.saveMessageSender(config:)`, `AdminHandler.testMessage()`
+
+**Complexity:** High (dynamic forms per provider)
 
 ---
 
-## 8. Remote Command Execution — MISSING
+#### #8. Remote Command Execution — IMPLEMENTED
 
-**Web:** `/admin/exec` — execute shell commands on selected nodes
-**API endpoints:**
-- `POST /api/admin/task/exec` — `{ command, clients: [uuid...] }`
-- `GET /api/admin/task/{taskId}/result` — poll for results
+**View:** `RemoteExecView.swift`
+**API:** `AdminHandler.execTask(command:clients:)`, `AdminHandler.getTaskResult(taskId:)`
+**Model:** `ExecTaskData`, `ExecResult`, `ExecClientInfo` in `ExecResponse.swift`
+- Command input field (monospaced, multi-line)
+- Multi-select node picker with Select All/Deselect All
+- Execute button in toolbar with progress indicator
+- Real-time result polling (every 2s, 60s timeout)
+- Per-node result display with color-coded status badges (running/success/failed/timeout)
+- Exit code + monospaced output display with text selection
+- Controls disabled during execution/polling
+- Polling auto-cancels on view disappear
 
-**Web details:**
-- Command input field
-- Multi-select node picker
-- Execute button
-- Real-time result polling (every 2s, timeout 60s)
-- Per-node status display: running/success/failed/timeout
-- Exit code + output display per node
-- Copy output to clipboard
-
-**What to implement:**
-- New "Remote Exec" view (admin section)
-- Command text field
-- Node multi-selector
-- Execute with progress
-- Poll results with timer
-- Display output per node with exit status
-- Models: `ExecTask`, `ExecResult`
-- API: `AdminHandler.execTask(command:clients:)`, `AdminHandler.getTaskResult(taskId:)`
+**Complexity:** Medium
 
 ---
 
-## 9. Session Management — MISSING
+#### #9. Session Management — IMPLEMENTED
 
 **Web:** `/admin/sessions` — view and manage login sessions
-**API endpoints:**
+**API:**
 - `GET /api/admin/session/get` — returns `{ current, data: [...] }`
 - `POST /api/admin/session/remove` — `{ session: id }`
 - `POST /api/admin/session/remove/all`
@@ -204,103 +212,106 @@ Compared every admin feature in **komari-web** (`/Volumes/Work/komari-web/src/pa
 - Auto-logout if current session is deleted
 
 **What to implement:**
-- New "Sessions" view (in settings/account)
-- Session list with details
+- "Sessions" item in Administration section
+- Session list with details (IP, login method, timestamps)
+- Current session badge
 - Swipe-to-delete individual sessions
-- "Revoke all" button
-- Models: `SessionInfo` struct
+- "Revoke All" button
+- Models: `SessionInfo`
 - API: `AdminHandler.getSessions()`, `AdminHandler.removeSession(id:)`, `AdminHandler.removeAllSessions()`
 
----
-
-## 10. Account Management — MISSING
-
-**Web:** `/admin/account` — manage admin account
-**API endpoints:**
-- `POST /api/admin/update/user` — `{ uuid, username }` or `{ uuid, password }`
-- `GET /api/admin/2fa/generate` — get QR code for TOTP setup
-- `GET /api/admin/2fa/enable?code={code}` — verify and enable 2FA
-- `POST /api/admin/2fa/disable` — disable 2FA
-- `GET /api/admin/oauth2/bind` — initiate OAuth2 binding (redirect)
-- `POST /api/admin/oauth2/unbind` — unbind OAuth2 provider
-
-**Web details:**
-- Update Username section with save button
-- Change Password section (min 8 chars, must contain uppercase+lowercase+digits, confirm match, auto-logout on change)
-- 2FA section: generate QR code, enter code to enable, disable button
-- OAuth2 section: bind/unbind SSO providers (GitHub, Google, GitLab, Discord, etc.)
-
-**What to implement:**
-- "Account" view in settings
-- Username edit
-- Password change form with validation
-- 2FA toggle with QR code display and code verification
-- OAuth2 bind/unbind (open in Safari)
-- API: `AdminHandler.updateUser(...)`, `AdminHandler.generate2FA()`, `AdminHandler.enable2FA(code:)`, `AdminHandler.disable2FA()`, `AdminHandler.unbindOAuth2()`
+**Complexity:** Low
 
 ---
 
-## 11. Activity/Audit Logs — MISSING
+#### #10. Account Management — IMPLEMENTED
 
-**Web:** `/admin/logs` — paginated audit log viewer
-**API:** `GET /api/admin/logs?limit={limit}&page={page}` — returns `{ data: { logs: [...], total } }`
+**View:** `AccountView.swift`
+**API:** `AdminHandler.updateUsername(uuid:username:)`, `AdminHandler.updatePassword(uuid:password:)`, `AdminHandler.generate2FA()`, `AdminHandler.enable2FA(code:)`, `AdminHandler.disable2FA()`, `AdminHandler.unbindOAuth2()`
+**Model:** Uses `MeResponseData` from `MeResponse.swift`
+- Username section: edit + save with min 3 chars validation
+- Password section: change form with validation (min 8 chars, uppercase+lowercase+digits, confirm match)
+- 2FA section: status badge, enable via QR code sheet (scan + 6-digit OTP), disable with confirmation alert
+- OAuth2 section: shows bound provider name + ID, unbind with confirmation alert
+- Success/error inline messages per section
+- Auto-refreshes account data after each change
 
-**Web details:**
-- Paginated table: ID, IP, UUID, Message Type, Message, Timestamp
-- Click on ID to view full log entry details
-- Configurable page size (1-100)
-
-**What to implement:**
-- "Logs" view (in settings/admin section)
-- Paginated list with pull-to-refresh
-- Log entry detail view
-- Models: `AuditLog` struct
-- API: `AdminHandler.getLogs(limit:page:)`
+**Complexity:** Medium
 
 ---
 
-## 12. General Settings — MISSING
+#### #11. Activity/Audit Logs — IMPLEMENTED
+
+**View:** `LogsView.swift`
+**API:** `AdminHandler.getLogs(limit:page:)`
+**Model:** `AuditLog`, `LogsData` in `LogResponse.swift`
+- Paginated list with prev/next controls (20 per page)
+- Log rows show type badge, message (2-line truncated), IP, timestamp
+- Tap row to open detail sheet with full log info (ID, IP, UUID, Type, Message, Time)
+- Text selection enabled in detail view
+- Color-coded type badges (login=blue, error=red, warning=orange)
+
+**Complexity:** Low
+
+---
+
+#### #12. General Settings — MISSING
 
 **Web:** `/admin/settings/general`
-**API endpoints:**
+**API:**
 - `POST /api/admin/update/mmdb` — update GeoIP database
 - `GET /api/admin/test/geoip?ip={ip}` — test GeoIP lookup
+- `GET/POST /api/admin/settings` — shared settings (recording toggles, preserve times)
 
 **Web details:**
 - GeoIP: enable/disable, provider selection (MaxMind MMDB, ip-api.com, geojs.io, ipinfo.io), update database, test IP lookup
-- Recording: enable/disable record collection, load record preserve time (hours), ping record preserve time (hours), expected disk usage calculator
+- Recording: enable/disable record collection, load record preserve time (hours), ping record preserve time (hours)
 
 **What to implement:**
-- "General Settings" view
+- "General" item in Settings section
 - GeoIP toggle + provider picker + update button + test field
 - Recording toggle + preserve time inputs
-- API: `AdminHandler.updateMMDB()`, `AdminHandler.testGeoIP(ip:)`, plus settings save endpoint
+- API: `AdminHandler.updateMMDB()`, `AdminHandler.testGeoIP(ip:)`, plus shared settings
+
+**Complexity:** Medium
 
 ---
 
-## 13. Site Settings — MISSING (Low priority for mobile)
+#### #13. Site Settings — MISSING
 
 **Web:** `/admin/settings/site`
-**API endpoints:**
+**API:**
+- `GET/POST /api/admin/settings` — shared settings
 - `GET /api/admin/download/backup` — download backup
 - `POST /api/admin/upload/backup` — upload/restore backup (.zip)
 - `PUT /api/admin/update/favicon` — upload favicon
 - `POST /api/admin/update/favicon` — reset favicon
 
 **Web details:**
-- Site name, description, CORS toggle, private site toggle, send IP to guest toggle, script domain
+- Site name, description
+- CORS toggle, private site toggle, send IP to guest toggle, script domain
 - Custom header/body HTML injection
 - Favicon management (upload/reset)
 - Backup download/restore
 
-**Mobile considerations:** HTML editing is awkward on mobile. Backup download/upload feasible via Files.app. Basic fields (name, description, toggles) are straightforward.
+**Mobile considerations:** HTML editing (custom head/body) is awkward on mobile. Backup download/upload feasible via Files.app. Basic fields (name, description, toggles) are straightforward.
+
+**What to implement:**
+- "Site Settings" item in Settings section
+- Basic fields: site name, description, toggles (CORS, private, send IP)
+- Script domain field
+- Backup download/restore (share sheet for download, document picker for upload)
+- Favicon: skip or simple upload from photo library
+- Skip custom HTML fields or provide basic text editor
+
+**Complexity:** High (backup handling, favicon, HTML fields)
 
 ---
 
-## 14. SSO/OIDC Settings — MISSING (Low priority for mobile)
+#### #14. SSO/OIDC Settings — MISSING (Low priority)
 
 **Web:** `/admin/settings/sign-on`
-**API endpoints:**
+**API:**
 - `GET /api/admin/settings/oidc` — get available providers
 - `GET /api/admin/settings/oidc?provider={name}` — get provider config
 - `POST /api/admin/settings/oidc` — save provider config
@@ -311,40 +322,57 @@ Compared every admin feature in **komari-web** (`/Volumes/Work/komari-web/src/pa
 - Dynamic provider config fields (client ID, secret, scopes, URLs)
 - Callback URL display
 
-**Mobile considerations:** Complex configuration forms. Useful for initial setup but rarely changed. Could be simplified version.
+**Mobile considerations:** Complex configuration forms, rarely changed after initial setup.
+
+**Complexity:** High
 
 ---
 
-## 15. Theme Management — MISSING (Low priority for mobile)
+#### #15. Theme Management — MISSING (Low priority)
 
 **Web:** `/admin/settings/theme`
-**API endpoints:**
+**API:**
 - `GET /api/admin/theme/list`
 - `PUT /api/admin/theme/upload` (.zip)
 - `GET /api/admin/theme/set?theme={short}`
 - `POST /api/admin/theme/update`
 - `POST /api/admin/theme/delete`
 
-**Mobile considerations:** Theme upload requires .zip file handling. Could implement list + set active + delete. Upload less practical on mobile.
+**Mobile considerations:** Theme upload requires .zip file handling. Only affects the web dashboard, not the mobile app. Very low priority.
+
+**Complexity:** Medium
 
 ---
 
-## Priority Summary
+## Implementation Priority
 
-| # | Feature | Priority | Complexity |
-|---|---------|----------|------------|
-| 1 | Add Server | High | Medium |
-| 2 | Edit Server | High | Medium |
-| 3 | Reorder Servers | High | Low |
-| 4 | Ping Task Management | High | Medium |
-| 5 | Load Alert Notifications | High | Medium |
-| 6 | Offline Notification Settings | Medium | Low |
-| 7 | Notification Provider Settings | Medium | High |
-| 8 | Remote Command Execution | Medium | Medium |
-| 9 | Session Management | Medium | Low |
-| 10 | Account Management | Medium | Medium |
-| 11 | Activity Logs | Low | Low |
-| 12 | General Settings | Low | Medium |
-| 13 | Site Settings | Low | High |
-| 14 | SSO/OIDC Settings | Low | High |
-| 15 | Theme Management | Low | Medium |
+| # | Feature | Section | Priority | Complexity | Status |
+|---|---------|---------|----------|------------|--------|
+| — | Ping Tasks | Administration | — | — | ✅ Done |
+| — | Load Alerts | Notifications | — | — | ✅ Done |
+| — | Offline Notifications | Notifications | — | — | ✅ Done |
+| 6b | General Notifications | Notifications | High | Low | ✅ Done |
+| 9 | Sessions | Administration | High | Low | ✅ Done |
+| 11 | Logs | Administration | High | Low | ✅ Done |
+| 8 | Remote Exec | Administration | High | Medium | ✅ Done |
+| 10 | Account | Administration | Medium | Medium | ✅ Done |
+| 12 | General Settings | Settings | Medium | Medium | ❌ Missing |
+| 7 | Notification Provider | Settings | Medium | High | ❌ Missing |
+| 13 | Site Settings | Settings | Low | High | ❌ Missing |
+| 14 | SSO/OIDC | Settings | Low | High | ❌ Missing |
+| 15 | Theme | Settings | Low | Medium | ❌ Missing |
+
+---
+
+## Shared API: Settings Endpoint
+
+Several features (#6b, #12, #13) share the same settings API:
+- `GET /api/admin/settings` → returns all dashboard settings as a flat object
+- `POST /api/admin/settings` → partial update, merge changed keys
+
+Settings keys used across features:
+- **General Notifications (#6b):** `expire_notification_enabled`, `expire_notification_lead_days`, `login_notification`, `traffic_limit_percentage`
+- **General Settings (#12):** `geo_ip_enabled`, `geo_ip_provider`, `record_enabled`, `load_record_preserve_time`, `ping_record_preserve_time`
+- **Site Settings (#13):** `sitename`, `description`, `allow_cors`, `private_site`, `send_ip_to_guest`, `script_domain`, `custom_head`, `custom_body`
+
+Implement `AdminHandler.getSettings()` and `AdminHandler.updateSettings(changes:)` once, reuse across all three views.

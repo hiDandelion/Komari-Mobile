@@ -45,7 +45,7 @@ struct OfflineNotificationsView: View {
         .navigationTitle("Offline Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $nodeToEdit) { node in
-            OfflineNotificationEditSheet(
+            OfflineNotificationFormView(
                 node: node,
                 enabled: editEnabled,
                 gracePeriod: editGracePeriod
@@ -68,14 +68,28 @@ struct OfflineNotificationsView: View {
             ForEach(state.nodes) { node in
                 let notification = notifications.first { $0.client == node.uuid }
                 OfflineNotificationRow(node: node, notification: notification)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        editEnabled = notification?.enable ?? false
-                        editGracePeriod = String(notification?.gracePeriod ?? 300)
-                        nodeToEdit = node
+                    .contextMenu {
+                        Button {
+                            prepareEdit(node: node, notification: notification)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            prepareEdit(node: node, notification: notification)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
                     }
             }
         }
+    }
+
+    private func prepareEdit(node: NodeData, notification: OfflineNotification?) {
+        editEnabled = notification?.enable ?? false
+        editGracePeriod = String(notification?.gracePeriod ?? 300)
+        nodeToEdit = node
     }
 
     private func loadNotifications() async {
@@ -171,9 +185,9 @@ private struct OfflineNotificationRow: View {
     }
 }
 
-// MARK: - Edit Sheet
+// MARK: - Form
 
-private struct OfflineNotificationEditSheet: View {
+private struct OfflineNotificationFormView: View {
     @Environment(\.dismiss) private var dismiss
 
     let node: NodeData
@@ -195,21 +209,26 @@ private struct OfflineNotificationEditSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Text(node.name.isEmpty ? node.uuid : node.name)
-                        .font(.headline)
-                } header: {
-                    Text("Server")
+                    LabeledContent {
+                        Text(node.name.isEmpty ? node.uuid : node.name)
+                            .font(.headline)
+                    } label: {
+                        Text("Server")
+                    }
                 }
-
+                
                 Section {
                     Toggle("Enabled", isOn: $enabled)
+                }
 
-                    TextField("Grace Period (seconds)", text: $gracePeriod)
-                        .keyboardType(.numberPad)
-                } header: {
-                    Text("Settings")
-                } footer: {
-                    Text("Grace period is the number of seconds to wait before sending a notification after the server goes offline.")
+                Section("Options") {
+                    LabeledContent {
+                        TextField("Seconds", text: $gracePeriod)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("Grace Period")
+                    }
                 }
 
                 if let errorMessage {

@@ -185,7 +185,7 @@ private struct InstallCommandView: View {
 
                     Toggle("GitHub Proxy", isOn: $enableGhProxy)
                     if enableGhProxy {
-                        TextField("https://ghfast.top/", text: $ghProxy)
+                        TextField("Proxy", text: $ghProxy)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .keyboardType(.URL)

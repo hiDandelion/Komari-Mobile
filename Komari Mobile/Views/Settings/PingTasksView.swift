@@ -271,11 +271,13 @@ private struct PingTaskFormView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Task") {
+                Section {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-
+                }
+                
+                Section("Options") {
                     Picker("Type", selection: $pingType) {
                         ForEach(PingType.allCases, id: \.self) { type in
                             Text(type.title).tag(type)

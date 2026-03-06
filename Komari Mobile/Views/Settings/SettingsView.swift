@@ -18,16 +18,34 @@ struct SettingsView: View {
                         Text("Dashboard Settings")
                     }
                 }
-                
-                Section("Dashboard Administration") {
-                    NavigationLink(value: "ping-tasks") {
-                        Text("Ping Tasks")
+
+                Section("Notifications") {
+                    NavigationLink(value: "offline-notifications") {
+                        Text("Offline Notifications")
                     }
                     NavigationLink(value: "load-alerts") {
                         Text("Load Alerts")
                     }
-                    NavigationLink(value: "offline-notifications") {
-                        Text("Offline Notifications")
+                    NavigationLink(value: "general-notifications") {
+                        Text("General Notifications")
+                    }
+                }
+
+                Section("Administration") {
+                    NavigationLink(value: "ping-tasks") {
+                        Text("Ping Tasks")
+                    }
+                    NavigationLink(value: "remote-exec") {
+                        Text("Remote Exec")
+                    }
+                    NavigationLink(value: "sessions") {
+                        Text("Sessions")
+                    }
+                    NavigationLink(value: "account") {
+                        Text("Account")
+                    }
+                    NavigationLink(value: "logs") {
+                        Text("Logs")
                     }
                 }
 
@@ -49,6 +67,16 @@ struct SettingsView: View {
                     LoadAlertsView()
                 case "offline-notifications":
                     OfflineNotificationsView()
+                case "general-notifications":
+                    GeneralNotificationsView()
+                case "remote-exec":
+                    RemoteExecView()
+                case "sessions":
+                    SessionsView()
+                case "account":
+                    AccountView()
+                case "logs":
+                    LogsView()
                 case "acknowledgments":
                     AcknowledgmentView()
                 default:

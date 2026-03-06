@@ -373,6 +373,364 @@ class AdminHandler {
         }
     }
 
+    // MARK: - Dashboard Settings
+
+    /// Fetch dashboard settings
+    static func getSettings() async throws -> DashboardSettings {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/settings") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(url: url)
+
+        guard response.statusCode == 200 else {
+            throw KomariError.invalidResponse("Fetch settings failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<DashboardSettings>.self, from: data)
+
+        guard baseResponse.isSuccess, let settings = baseResponse.data else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Fetch settings failed")
+        }
+
+        return settings
+    }
+
+    /// Update dashboard settings (partial update)
+    static func updateSettings(changes: [String: Any]) async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/settings") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let bodyData = try JSONSerialization.data(withJSONObject: changes)
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Update settings failed")
+            }
+            throw KomariError.invalidResponse("Update settings failed with status \(response.statusCode)")
+        }
+    }
+
+    // MARK: - Sessions
+
+    /// Fetch all sessions
+    static func getSessions() async throws -> (current: String, sessions: [SessionInfo]) {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/session/get") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(url: url)
+
+        guard response.statusCode == 200 else {
+            throw KomariError.invalidResponse("Fetch sessions failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let sessionsResponse = try decoder.decode(SessionsResponse.self, from: data)
+
+        guard sessionsResponse.status == "success" else {
+            throw KomariError.invalidResponse("Fetch sessions failed")
+        }
+
+        return (sessionsResponse.current ?? "", sessionsResponse.data ?? [])
+    }
+
+    /// Remove a specific session
+    static func removeSession(session: String) async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/session/remove") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let bodyData = try JSONSerialization.data(withJSONObject: ["session": session])
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Remove session failed")
+            }
+            throw KomariError.invalidResponse("Remove session failed with status \(response.statusCode)")
+        }
+    }
+
+    /// Remove all sessions
+    static func removeAllSessions() async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/session/remove/all") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Remove all sessions failed")
+            }
+            throw KomariError.invalidResponse("Remove all sessions failed with status \(response.statusCode)")
+        }
+    }
+
+    // MARK: - Account
+
+    /// Update username
+    static func updateUsername(uuid: String, username: String) async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/update/user") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let payload: [String: Any] = ["uuid": uuid, "username": username]
+        let bodyData = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Update username failed")
+            }
+            throw KomariError.invalidResponse("Update username failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<[String: String]?>.self, from: data)
+
+        guard baseResponse.isSuccess else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Update username failed")
+        }
+    }
+
+    /// Update password
+    static func updatePassword(uuid: String, password: String) async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/update/user") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let payload: [String: Any] = ["uuid": uuid, "password": password]
+        let bodyData = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Update password failed")
+            }
+            throw KomariError.invalidResponse("Update password failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<[String: String]?>.self, from: data)
+
+        guard baseResponse.isSuccess else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Update password failed")
+        }
+    }
+
+    /// Generate 2FA QR code (returns PNG image data)
+    static func generate2FA() async throws -> Data {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/2fa/generate") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(url: url)
+
+        guard response.statusCode == 200 else {
+            throw KomariError.invalidResponse("Generate 2FA failed with status \(response.statusCode)")
+        }
+
+        return data
+    }
+
+    /// Enable 2FA with verification code
+    static func enable2FA(code: String) async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/2fa/enable?code=\(code)") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST"
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Enable 2FA failed")
+            }
+            throw KomariError.invalidResponse("Enable 2FA failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<String?>.self, from: data)
+
+        guard baseResponse.isSuccess else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Enable 2FA failed")
+        }
+    }
+
+    /// Disable 2FA
+    static func disable2FA() async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/2fa/disable") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST"
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Disable 2FA failed")
+            }
+            throw KomariError.invalidResponse("Disable 2FA failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<String?>.self, from: data)
+
+        guard baseResponse.isSuccess else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Disable 2FA failed")
+        }
+    }
+
+    /// Unbind OAuth2 provider
+    static func unbindOAuth2() async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/oauth2/unbind") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST"
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Unbind OAuth2 failed")
+            }
+            throw KomariError.invalidResponse("Unbind OAuth2 failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<String?>.self, from: data)
+
+        guard baseResponse.isSuccess else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Unbind OAuth2 failed")
+        }
+    }
+
+    // MARK: - Remote Exec
+
+    /// Execute a command on selected nodes
+    static func execTask(command: String, clients: [String]) async throws -> ExecTaskData {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/task/exec") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let payload: [String: Any] = [
+            "command": command,
+            "clients": clients
+        ]
+        let bodyData = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Exec task failed")
+            }
+            throw KomariError.invalidResponse("Exec task failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<ExecTaskData>.self, from: data)
+
+        guard baseResponse.isSuccess, let taskData = baseResponse.data else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Exec task failed")
+        }
+
+        return taskData
+    }
+
+    /// Poll for task execution results
+    static func getTaskResult(taskId: String) async throws -> [ExecResult] {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/task/\(taskId)/result") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(url: url)
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Fetch task result failed")
+            }
+            throw KomariError.invalidResponse("Fetch task result failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<[ExecResult]>.self, from: data)
+
+        guard baseResponse.isSuccess, let results = baseResponse.data else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Fetch task result failed")
+        }
+
+        return results
+    }
+
+    // MARK: - Logs
+
+    /// Fetch paginated audit logs
+    static func getLogs(limit: Int, page: Int) async throws -> (logs: [AuditLog], total: Int) {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/logs?limit=\(limit)&page=\(page)") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(url: url)
+
+        guard response.statusCode == 200 else {
+            throw KomariError.invalidResponse("Fetch logs failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<LogsData>.self, from: data)
+
+        guard baseResponse.isSuccess, let logsData = baseResponse.data else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Fetch logs failed")
+        }
+
+        return (logsData.logs ?? [], logsData.total ?? 0)
+    }
+
     // MARK: - Client Management
 
     /// Reorder clients

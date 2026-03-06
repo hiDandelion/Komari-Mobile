@@ -15,10 +15,30 @@
       }
     },
     "/;/home;/var" : {
-
+      "shouldTranslate" : false
     },
     "/opt/komari-agent" : {
-
+      "shouldTranslate" : false
+    },
+    "#%lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "#%lld"
+          }
+        }
+      }
+    },
+    "%" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%"
+          }
+        }
+      }
     },
     "%.0f%@" : {
       "localizations" : {
@@ -47,7 +67,14 @@
       }
     },
     "%.1f" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f"
+          }
+        }
+      }
     },
     "%.1f%@" : {
       "localizations" : {
@@ -66,7 +93,14 @@
       }
     },
     "%.1f%%" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f%%"
+          }
+        }
+      }
     },
     "%@ · %@" : {
       "localizations" : {
@@ -96,6 +130,32 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%lld"
+          }
+        }
+      }
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
           }
         }
       }
@@ -131,7 +191,14 @@
       }
     },
     "%lld%%" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
     },
     "%llds" : {
       "localizations" : {
@@ -153,12 +220,32 @@
         }
       }
     },
+    "0-1" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0-1"
+          }
+        }
+      }
+    },
     "About" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "关于"
+          }
+        }
+      }
+    },
+    "Account" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "账户"
           }
         }
       }
@@ -243,12 +330,22 @@
         }
       }
     },
-    "Alert" : {
+    "Administration" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "告警"
+            "value" : "管理"
+          }
+        }
+      }
+    },
+    "After unbinding, you will not be able to log in with your %@ account. Are you sure?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解绑后，您将无法使用%@账户登录。确定吗？"
           }
         }
       }
@@ -309,6 +406,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你确定要删除\"%@\"吗？"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete this session?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定要删除此会话吗？"
+          }
+        }
+      }
+    },
+    "Are you sure you want to disable two-factor authentication?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定禁用双重身份验证吗？"
+          }
+        }
+      }
+    },
+    "Are you sure you want to unbind your SSO account?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定要解绑SSO账户吗？"
           }
         }
       }
@@ -413,12 +540,32 @@
         }
       }
     },
+    "Change Password" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改密码"
+          }
+        }
+      }
+    },
     "Command" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "命令"
+          }
+        }
+      }
+    },
+    "Confirm Password" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认密码"
           }
         }
       }
@@ -513,6 +660,16 @@
         }
       }
     },
+    "Current" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前"
+          }
+        }
+      }
+    },
     "Custom Install Directory" : {
       "localizations" : {
         "zh-Hans" : {
@@ -529,16 +686,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自定义服务名称"
-          }
-        }
-      }
-    },
-    "Dashboard Administration" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dashboard管理"
           }
         }
       }
@@ -603,6 +750,16 @@
         }
       }
     },
+    "Days" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天"
+          }
+        }
+      }
+    },
     "Default" : {
       "localizations" : {
         "zh-Hans" : {
@@ -643,6 +800,16 @@
         }
       }
     },
+    "Delete Session" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除会话"
+          }
+        }
+      }
+    },
     "Delete Task" : {
       "localizations" : {
         "zh-Hans" : {
@@ -659,6 +826,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "降序"
+          }
+        }
+      }
+    },
+    "Deselect All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消全选"
+          }
+        }
+      }
+    },
+    "Disable" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用"
+          }
+        }
+      }
+    },
+    "Disable 2FA" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用2FA"
           }
         }
       }
@@ -773,6 +970,26 @@
         }
       }
     },
+    "Enable" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用"
+          }
+        }
+      }
+    },
+    "Enable 2FA" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用2FA"
+          }
+        }
+      }
+    },
     "Enable SSL" : {
       "localizations" : {
         "zh-Hans" : {
@@ -834,7 +1051,7 @@
       }
     },
     "eth0,eth1" : {
-
+      "shouldTranslate" : false
     },
     "Exclude NICs" : {
       "localizations" : {
@@ -842,6 +1059,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "排除网卡"
+          }
+        }
+      }
+    },
+    "Execute" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "执行"
+          }
+        }
+      }
+    },
+    "Exit code:" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出码:"
           }
         }
       }
@@ -856,12 +1093,52 @@
         }
       }
     },
+    "Expiration Notification" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "过期提醒"
+          }
+        }
+      }
+    },
     "Expires" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "到期"
+          }
+        }
+      }
+    },
+    "Failed to load QR code." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载二维码。"
+          }
+        }
+      }
+    },
+    "General" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通用"
+          }
+        }
+      }
+    },
+    "General Notifications" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通用通知"
           }
         }
       }
@@ -886,22 +1163,12 @@
         }
       }
     },
-    "Grace Period (seconds)" : {
+    "Grace Period" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "宽限期（秒）"
-          }
-        }
-      }
-    },
-    "Grace period is the number of seconds to wait before sending a notification after the server goes offline." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "宽限期是指服务器离线后，等待多少秒才发送离线通知。"
+            "value" : "宽限期"
           }
         }
       }
@@ -925,9 +1192,6 @@
           }
         }
       }
-    },
-    "https://ghfast.top/" : {
-
     },
     "Ignore Unsafe Cert" : {
       "localizations" : {
@@ -979,12 +1243,12 @@
         }
       }
     },
-    "Interval (minutes)" : {
+    "Interval" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "间隔（分钟）"
+            "value" : "间隔"
           }
         }
       }
@@ -1020,7 +1284,17 @@
       }
     },
     "komari-agent" : {
-
+      "shouldTranslate" : false
+    },
+    "Last seen %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近在线 %@"
+          }
+        }
+      }
     },
     "Latency" : {
       "localizations" : {
@@ -1032,8 +1306,18 @@
         }
       }
     },
+    "Lead Days" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提前天数"
+          }
+        }
+      }
+    },
     "lo" : {
-
+      "shouldTranslate" : false
     },
     "Load Alerts" : {
       "localizations" : {
@@ -1051,6 +1335,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "加载中…"
+          }
+        }
+      }
+    },
+    "Log Detail" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日志详情"
+          }
+        }
+      }
+    },
+    "Login Notification" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录通知"
+          }
+        }
+      }
+    },
+    "Logs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日志"
           }
         }
       }
@@ -1085,6 +1399,16 @@
         }
       }
     },
+    "Message" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消息"
+          }
+        }
+      }
+    },
     "Metric" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1101,6 +1425,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最小"
+          }
+        }
+      }
+    },
+    "Minutes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分钟"
           }
         }
       }
@@ -1155,6 +1489,36 @@
         }
       }
     },
+    "New Password" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新密码"
+          }
+        }
+      }
+    },
+    "No active sessions found." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有活动会话。"
+          }
+        }
+      }
+    },
+    "No audit logs found." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有审计日志。"
+          }
+        }
+      }
+    },
     "No Data" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1171,6 +1535,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无负载告警"
+          }
+        }
+      }
+    },
+    "No Logs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无日志"
           }
         }
       }
@@ -1225,12 +1599,62 @@
         }
       }
     },
+    "No Sessions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无会话"
+          }
+        }
+      }
+    },
     "None" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "无"
+          }
+        }
+      }
+    },
+    "Notifications" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "Notify when a server's billing is about to expire. Lead days controls how many days before expiration to send the notification." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当服务器计费即将到期时发送通知。提前天数控制到期前多少天发送提醒。"
+          }
+        }
+      }
+    },
+    "Notify when a server's traffic usage reaches this percentage of its limit." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当服务器流量使用达到限额的指定百分比时发送通知。"
+          }
+        }
+      }
+    },
+    "Notify when someone logs in to the admin dashboard." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当有人登录管理面板时发送通知。"
           }
         }
       }
@@ -1281,6 +1705,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在线"
+          }
+        }
+      }
+    },
+    "Options" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选项"
+          }
+        }
+      }
+    },
+    "OTP" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证码"
           }
         }
       }
@@ -1384,6 +1828,16 @@
         }
       }
     },
+    "Proxy" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "代理"
+          }
+        }
+      }
+    },
     "Public Remark" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1414,12 +1868,12 @@
         }
       }
     },
-    "Ratio (0-1)" : {
+    "Ratio" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "时间占比（0-1）"
+            "value" : "时间占比"
           }
         }
       }
@@ -1440,6 +1894,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "备注"
+          }
+        }
+      }
+    },
+    "Remote Exec" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "远程执行"
           }
         }
       }
@@ -1474,12 +1938,52 @@
         }
       }
     },
+    "Results" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "执行结果"
+          }
+        }
+      }
+    },
     "Retry" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "重试"
+          }
+        }
+      }
+    },
+    "Revoke All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "撤销全部"
+          }
+        }
+      }
+    },
+    "Revoke All Sessions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "撤销全部会话"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
           }
         }
       }
@@ -1494,12 +1998,62 @@
         }
       }
     },
+    "Save Username" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存用户名"
+          }
+        }
+      }
+    },
+    "Scan QR Code" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扫描二维码"
+          }
+        }
+      }
+    },
+    "Scan this QR code with your authenticator app, then enter the 6-digit code below." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用身份验证应用扫描此二维码，然后在下方输入6位验证码。"
+          }
+        }
+      }
+    },
+    "Seconds" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "秒"
+          }
+        }
+      }
+    },
     "Section" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择"
+          }
+        }
+      }
+    },
+    "Select All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全选"
           }
         }
       }
@@ -1564,6 +2118,16 @@
         }
       }
     },
+    "Sessions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会话管理"
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1600,6 +2164,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "速度"
+          }
+        }
+      }
+    },
+    "SSO" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSO"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状态"
           }
         }
       }
@@ -1657,12 +2241,22 @@
     "This project is subject to\nMIT License" : {
       "shouldTranslate" : false
     },
-    "Threshold (%@)" : {
+    "This will log out all sessions including the current one. You will need to log in again." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "阈值（%@）"
+            "value" : "这将注销所有会话（包括当前会话）。您需要重新登录。"
+          }
+        }
+      }
+    },
+    "Threshold" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阈值"
           }
         }
       }
@@ -1707,6 +2301,16 @@
         }
       }
     },
+    "Traffic Alert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "流量告警"
+          }
+        }
+      }
+    },
     "Traffic Limit" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1727,12 +2331,42 @@
         }
       }
     },
+    "Two-Factor Authentication" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双重身份验证"
+          }
+        }
+      }
+    },
     "Type" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "类型"
+          }
+        }
+      }
+    },
+    "Unbind" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解绑"
+          }
+        }
+      }
+    },
+    "Unbind SSO" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解绑SSO"
           }
         }
       }
@@ -1823,6 +2457,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "值"
+          }
+        }
+      }
+    },
+    "Verification" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证"
           }
         }
       }

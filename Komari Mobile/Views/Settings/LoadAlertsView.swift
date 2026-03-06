@@ -136,20 +136,18 @@ struct LoadAlertsView: View {
                         }
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button {
+                            alertToEdit = alert
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        
                         Button(role: .destructive) {
                             alertToDelete = alert
                             isShowDeleteAlert = true
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
-                    }
-                    .swipeActions(edge: .leading) {
-                        Button {
-                            alertToEdit = alert
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
-                        }
-                        .tint(.blue)
                     }
             }
         }
@@ -296,25 +294,42 @@ private struct LoadAlertFormView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Alert") {
+                Section {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-
+                }
+                
+                Section("Options") {
                     Picker("Metric", selection: $metric) {
                         ForEach(LoadAlertMetric.allCases, id: \.self) { m in
                             Text(m.title).tag(m)
                         }
                     }
 
-                    TextField("Threshold (\(metric.unit))", text: $threshold)
-                        .keyboardType(.decimalPad)
-
-                    TextField("Ratio (0-1)", text: $ratio)
-                        .keyboardType(.decimalPad)
-
-                    TextField("Interval (minutes)", text: $interval)
-                        .keyboardType(.numberPad)
+                    LabeledContent {
+                        TextField(metric.unit, text: $threshold)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("Threshold")
+                    }
+                    
+                    LabeledContent {
+                        TextField("0-1", text: $ratio)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("Ratio")
+                    }
+                    
+                    LabeledContent {
+                        TextField("Minutes", text: $interval)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("Interval")
+                    }
                 }
 
                 Section("Servers") {
