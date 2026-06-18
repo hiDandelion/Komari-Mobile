@@ -56,13 +56,13 @@ struct ServerDetailStatusView: View {
         )
     }
 
-    private func sectionHeader(_ title: String, systemImage: String) -> some View {
+    private func sectionHeader(_ title: LocalizedStringKey, systemImage: String) -> some View {
         Label(title, systemImage: systemImage)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.secondary)
     }
 
-    private func infoRow(_ label: String, value: String) -> some View {
+    private func infoRow(_ label: LocalizedStringKey, value: String) -> some View {
         HStack {
             Text(label)
                 .foregroundStyle(.secondary)

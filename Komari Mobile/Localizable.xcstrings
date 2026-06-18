@@ -257,7 +257,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%#@arg1@ and %#@arg2@"
+            "value" : "%#@arg1@%#@arg2@"
           },
           "substitutions" : {
             "arg1" : {
@@ -345,7 +345,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%#@arg1@ and %#@arg2@"
+            "value" : "%#@arg1@%#@arg2@"
           },
           "substitutions" : {
             "arg1" : {
@@ -443,7 +443,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%#@arg1@ and %#@arg2@"
+            "value" : "%#@arg1@%#@arg2@"
           },
           "substitutions" : {
             "arg1" : {
@@ -1252,6 +1252,16 @@
         }
       }
     },
+    "Download Speed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载速度"
+          }
+        }
+      }
+    },
     "Edit" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1406,14 +1416,7 @@
       }
     },
     "Exit code:" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "退出码:"
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "Expiration Date" : {
       "localizations" : {
@@ -1494,6 +1497,9 @@
           }
         }
       }
+    },
+    "GPU" : {
+      "shouldTranslate" : false
     },
     "Grace Period" : {
       "localizations" : {
@@ -1595,6 +1601,16 @@
         }
       }
     },
+    "IP Address" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IP地址"
+          }
+        }
+      }
+    },
     "IPv4" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1667,6 +1683,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "负载告警"
+          }
+        }
+      }
+    },
+    "Load Average" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均负载"
           }
         }
       }
@@ -1817,6 +1843,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名称"
+          }
+        }
+      }
+    },
+    "Network" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络"
           }
         }
       }
@@ -2170,6 +2206,16 @@
         }
       }
     },
+    "Processes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进程"
+          }
+        }
+      }
+    },
     "Proxy" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2276,6 +2322,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新排序服务器"
+          }
+        }
+      }
+    },
+    "Resources" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "资源"
           }
         }
       }
@@ -2540,6 +2596,16 @@
         }
       }
     },
+    "System" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统"
+          }
+        }
+      }
+    },
     "Tags (semicolon-separated)" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2556,6 +2622,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "任务"
+          }
+        }
+      }
+    },
+    "TCP Connections" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TCP连接"
           }
         }
       }
@@ -2619,6 +2695,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "令牌"
+          }
+        }
+      }
+    },
+    "Total Download" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "总下载"
+          }
+        }
+      }
+    },
+    "Total Upload" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "总上传"
           }
         }
       }
@@ -2693,6 +2789,16 @@
         }
       }
     },
+    "UDP Connections" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UDP连接"
+          }
+        }
+      }
+    },
     "Unbind" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2753,6 +2859,26 @@
         }
       }
     },
+    "Upload Speed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上传速度"
+          }
+        }
+      }
+    },
+    "Uptime" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "运行时间"
+          }
+        }
+      }
+    },
     "Use API Key" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2809,6 +2935,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "验证"
+          }
+        }
+      }
+    },
+    "Virtualization" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "虚拟化"
           }
         }
       }

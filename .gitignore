@@ -1,34 +1,37 @@
 # Xcode
-build/
 DerivedData/
-*.xcworkspace/xcuserdata/
+build/
 *.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
 
-# Swift Package Manager
-.build/
-.swiftpm/
-Packages/
+# User state
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
 
-# CocoaPods
-Pods/
+# Build artifacts
+*.o
+*.d
+*.swp
+*.dSYM/
+*.ipa
+*.app.dSYM.zip
 
 # macOS
 .DS_Store
-*.swp
-*~
+.AppleDouble
+.LSOverride
+._*
 
-# Fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
-
-# Archives & IPAs
-*.ipa
-*.dSYM.zip
-*.dSYM
-
-# Playgrounds
-timeline.xctimeline
-playground.xcworkspace
+# IDE
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.hmap
+*.moved-aside
