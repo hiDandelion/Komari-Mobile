@@ -83,6 +83,12 @@ class KMCore {
         return URL(string: "\(getBaseURL())\(endpoint)")
     }
 
+    static func getWebSocketURL(endpoint: String) -> URL? {
+        let link = getKomariDashboardLink()
+        let scheme = getIsKomariDashboardSSLEnabled() ? "wss" : "ws"
+        return URL(string: "\(scheme)://\(link)\(endpoint)")
+    }
+
     // MARK: - Keychain Helpers
     private static func setKeychainValue(_ value: String, forKey key: String) {
         let data = Data(value.utf8)

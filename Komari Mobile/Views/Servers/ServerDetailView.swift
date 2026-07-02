@@ -31,6 +31,7 @@ struct ServerDetailView: View {
     var uuid: String
     @State private var activeTab: ServerDetailTab = .status
     @State private var isShowEditServer: Bool = false
+    @State private var isShowTerminal: Bool = false
 
     var body: some View {
         let node = state.nodes.first(where: { $0.uuid == uuid })
@@ -54,6 +55,14 @@ struct ServerDetailView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
+                            isShowTerminal = true
+                        } label: {
+                            Label("Terminal", systemImage: "terminal")
+                        }
+                        .disabled(!isOnline)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
                             isShowEditServer = true
                         } label: {
                             Label("Edit", systemImage: "pencil")
@@ -62,6 +71,12 @@ struct ServerDetailView: View {
                 }
                 .sheet(isPresented: $isShowEditServer) {
                     EditServerView(node: node)
+                }
+                .fullScreenCover(isPresented: $isShowTerminal) {
+                    NavigationStack {
+                        TerminalScreen(node: node)
+                    }
+                    .preferredColorScheme(.dark)
                 }
             } else {
                 ProgressView()

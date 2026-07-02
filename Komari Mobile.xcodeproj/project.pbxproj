@@ -10,6 +10,7 @@
 		CB9771B32F4696C300CFFF76 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB9771B22F4696C300CFFF76 /* WidgetKit.framework */; };
 		CB9771B52F4696C300CFFF76 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB9771B42F4696C300CFFF76 /* SwiftUI.framework */; };
 		CB9771C02F4696C400CFFF76 /* Komari Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CB9771B02F4696C300CFFF76 /* Komari Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CBAE00032F70000000000003 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = CBAE00022F70000000000002 /* SwiftTerm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBAE00032F70000000000003 /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,6 +143,7 @@
 			);
 			name = "Komari Mobile";
 			packageProductDependencies = (
+				CBAE00022F70000000000002 /* SwiftTerm */,
 			);
 			productName = "Komari Mobile";
 			productReference = CB9753342F42022600CFFF76 /* Komari Mobile.app */;
@@ -196,6 +199,9 @@
 			);
 			mainGroup = CB97532B2F42022600CFFF76;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CBAE00012F70000000000001 /* XCLocalSwiftPackageReference "SwiftTerm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CB9753352F42022600CFFF76 /* Products */;
 			projectDirPath = "";
@@ -380,7 +386,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Komari Mobile/Komari Mobile.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = C7AS5D38Q8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -418,7 +424,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Komari Mobile/Komari Mobile.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = C7AS5D38Q8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -456,7 +462,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = "Komari Widget/Komari Widget.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = C7AS5D38Q8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Komari Widget/Info.plist";
@@ -488,7 +494,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = "Komari Widget/Komari Widget.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = C7AS5D38Q8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Komari Widget/Info.plist";
@@ -544,6 +550,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		CBAE00012F70000000000001 /* XCLocalSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = SwiftTerm;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CBAE00022F70000000000002 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CB97532C2F42022600CFFF76 /* Project object */;
 }
