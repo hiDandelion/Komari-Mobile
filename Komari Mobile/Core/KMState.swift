@@ -39,6 +39,7 @@ class KMState {
     var nodes: [NodeData] = .init()
     var liveStatus: [String: NodeLiveStatus] = .init()
     var onlineUUIDs: Set<String> = .init()
+    var publicInfo: PublicInfo?
     private var timer: Timer?
 
     var groupNames: [String] {
@@ -67,6 +68,7 @@ class KMState {
                 try await loadNodes()
                 try await refreshLiveStatus()
                 dashboardLoadingState = .loaded
+                await loadPublicInfo()
             } catch {
                 withAnimation {
                     dashboardLoadingState = .error(error.localizedDescription)
@@ -131,5 +133,11 @@ class KMState {
     func refreshAll() async {
         try? await loadNodes()
         try? await refreshLiveStatus()
+        await loadPublicInfo()
+    }
+
+    /// Public site info is optional: older dashboards may not expose it, so failures are non-fatal.
+    func loadPublicInfo() async {
+        publicInfo = try? await PublicHandler.getPublicInfo()
     }
 }

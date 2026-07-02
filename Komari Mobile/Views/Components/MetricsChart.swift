@@ -17,6 +17,7 @@ struct MetricsDataPoint: Identifiable {
 // MARK: - Chart Period (for axis formatting)
 
 enum ChartPeriod {
+    case live
     case fourHours
     case oneDay
     case sevenDays
@@ -24,9 +25,7 @@ enum ChartPeriod {
 
     var xAxisFormat: Date.FormatStyle {
         switch self {
-        case .fourHours:
-            .dateTime.hour().minute()
-        case .oneDay:
+        case .live, .fourHours, .oneDay:
             .dateTime.hour().minute()
         case .sevenDays, .thirtyDays:
             .dateTime.month(.abbreviated).day()
@@ -36,6 +35,7 @@ enum ChartPeriod {
     /// Interval in seconds for downsampling
     var downsampleInterval: TimeInterval {
         switch self {
+        case .live: 1                  // live buffer is short; keep every point
         case .fourHours: 60            // 1 min  → ~240 pts
         case .oneDay: 15 * 60         // 15 min → ~96 pts
         case .sevenDays: 60 * 60      // 1 hour → ~168 pts

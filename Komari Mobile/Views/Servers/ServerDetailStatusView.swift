@@ -10,6 +10,7 @@ import SwiftUI
 struct ServerDetailStatusView: View {
     var node: NodeData
     var status: NodeLiveStatus?
+    var isOnline: Bool = true
 
     private var cpuUsage: Double { status?.cpuUsage ?? 0 }
     private var gpuUsage: Double { status?.gpuUsage ?? 0 }
@@ -32,13 +33,40 @@ struct ServerDetailStatusView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                if !isOnline {
+                    offlineBanner
+                }
                 systemInfoSection
+                if NodeBadgesView.hasContent(node: node) {
+                    billingSection
+                }
                 processorSection
                 resourcesSection
                 networkSection
                 addressSection
             }
             .padding()
+        }
+    }
+
+    // MARK: - Offline Banner
+
+    private var offlineBanner: some View {
+        card {
+            HStack(spacing: 10) {
+                Image(systemName: "wifi.slash")
+                    .font(.title3)
+                    .foregroundStyle(.red)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Server Offline")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Showing last reported data.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(14)
         }
     }
 
@@ -118,6 +146,49 @@ struct ServerDetailStatusView: View {
 
                     infoRow("Load Average", value: String(format: "%.2f  %.2f  %.2f", status.load1, status.load5, status.load15))
                     infoRow("Processes", value: "\(status.processCount)")
+                }
+            }
+            .padding(14)
+        }
+    }
+
+    // MARK: - Billing
+
+    private var billingSection: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionHeader("Billing", systemImage: "creditcard")
+
+                if let price = node.price, price != 0 {
+                    infoRow("Price", value: NodeBilling.priceLabel(price: price, currency: node.currency, billingCycle: node.billingCycle))
+                }
+
+                if let daysLeft = NodeBilling.daysUntilExpiry(node.expiredAt) {
+                    HStack {
+                        Text("Expiration")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if let expiredAt = node.expiredAt,
+                           let date = ServerDetailMonitorView.parseDate(expiredAt),
+                           daysLeft <= 36500 {
+                            Text(date, style: .date)
+                        }
+                        BadgeView(
+                            text: NodeBilling.expiryLabel(daysLeft: daysLeft),
+                            color: NodeBilling.expiryColor(daysLeft: daysLeft)
+                        )
+                    }
+                    .font(.subheadline)
+                }
+
+                let tags = NodeTag.parse(node.tags)
+                if !tags.isEmpty {
+                    FlowLayout(spacing: 5) {
+                        ForEach(tags) { tag in
+                            BadgeView(text: tag.text, color: tag.color)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .padding(14)
@@ -232,6 +303,17 @@ struct ServerDetailStatusView: View {
 
                 infoRow("Total Upload", value: formatBytes(status?.networkOutTotal ?? 0))
                 infoRow("Total Download", value: formatBytes(status?.networkInTotal ?? 0))
+
+                if let limit = node.trafficLimit, limit > 0 {
+                    Divider()
+
+                    TrafficLimitBar(
+                        totalUp: status?.networkOutTotal ?? 0,
+                        totalDown: status?.networkInTotal ?? 0,
+                        limit: limit,
+                        type: node.trafficLimitType
+                    )
+                }
 
                 Divider()
 

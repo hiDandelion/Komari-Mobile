@@ -40,17 +40,9 @@ struct ServerDetailView: View {
 
         Group {
             if let node {
-                VStack {
-                    if isOnline {
-                        content(node: node, status: status)
-                            .transition(.blurReplace)
-                    } else {
-                        ContentUnavailableView("Server Unavailable", systemImage: "square.stack.3d.up.slash.fill")
-                            .transition(.blurReplace)
-                    }
-                }
-                .animation(.smooth(duration: 0.3), value: isOnline)
-                .navigationTitle(node.name)
+                content(node: node, status: status, isOnline: isOnline)
+                    .animation(.smooth(duration: 0.3), value: isOnline)
+                    .navigationTitle(node.name)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -84,7 +76,7 @@ struct ServerDetailView: View {
         }
     }
 
-    private func content(node: NodeData, status: NodeLiveStatus?) -> some View {
+    private func content(node: NodeData, status: NodeLiveStatus?, isOnline: Bool) -> some View {
         ZStack {
             Color(UIColor.systemGroupedBackground)
                 .ignoresSafeArea()
@@ -103,7 +95,7 @@ struct ServerDetailView: View {
                 Group {
                     switch(activeTab) {
                     case .status:
-                        ServerDetailStatusView(node: node, status: status)
+                        ServerDetailStatusView(node: node, status: status, isOnline: isOnline)
                             .transition(.blurReplace)
                     case .load:
                         ServerDetailMonitorView(node: node)

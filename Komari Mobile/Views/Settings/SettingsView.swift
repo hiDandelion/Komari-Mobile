@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(KMState.self) var state
+    @State private var dashboardVersion: String?
 
     var body: some View {
         NavigationStack(path: Bindable(state).pathSettings) {
@@ -25,6 +26,9 @@ struct SettingsView: View {
                     }
                     NavigationLink(value: "load-alerts") {
                         TextWithColorfulIcon(titleKey: "Load Alerts", systemName: "exclamationmark.triangle", color: .orange)
+                    }
+                    NavigationLink(value: "traffic-reports") {
+                        TextWithColorfulIcon(titleKey: "Traffic Reports", systemName: "calendar.badge.clock", color: .purple)
                     }
                     NavigationLink(value: "general-notifications") {
                         TextWithColorfulIcon(titleKey: "General Notifications", systemName: "bell", color: .red)
@@ -59,9 +63,31 @@ struct SettingsView: View {
                     NavigationLink(value: "acknowledgments") {
                         TextWithColorfulIcon(titleKey: "Acknowledgments", systemName: "heart", color: .pink)
                     }
+                    if let dashboardVersion {
+                        LabeledContent {
+                            Text(dashboardVersion)
+                                .font(.subheadline.monospaced())
+                        } label: {
+                            TextWithColorfulIcon(titleKey: "Dashboard Version", systemName: "server.rack", color: .indigo)
+                        }
+                    }
                 }
             }
             .navigationTitle("Settings")
+            .task {
+                guard dashboardVersion == nil,
+                      let versionData = try? await PublicHandler.getVersion() else { return }
+                var parts: [String] = []
+                if let version = versionData.version, !version.isEmpty {
+                    parts.append(version)
+                }
+                if let hash = versionData.hash, !hash.isEmpty {
+                    parts.append("(\(String(hash.prefix(7))))")
+                }
+                if !parts.isEmpty {
+                    dashboardVersion = parts.joined(separator: " ")
+                }
+            }
             .navigationDestination(for: String.self) { target in
                 switch(target) {
                 case "dashboard-settings":
@@ -72,6 +98,8 @@ struct SettingsView: View {
                     LoadAlertsView()
                 case "offline-notifications":
                     OfflineNotificationsView()
+                case "traffic-reports":
+                    TrafficReportsView()
                 case "general-notifications":
                     GeneralNotificationsView()
                 case "remote-exec":

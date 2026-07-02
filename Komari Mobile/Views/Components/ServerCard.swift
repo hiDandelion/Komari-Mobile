@@ -27,9 +27,71 @@ struct ServerCard: View {
     var body: some View {
         VStack(spacing: 0) {
             headerSection
+            if NodeBadgesView.hasContent(node: node) {
+                badgesSection
+            }
             gaugeSection
             networkSection
+            if let limit = node.trafficLimit, limit > 0 {
+                trafficLimitSection(limit: limit)
+            }
         }
+    }
+
+    // MARK: - Badges
+
+    private var badgesSection: some View {
+        NodeBadgesView(node: node)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.bottom, 8)
+    }
+
+    // MARK: - Traffic Limit
+
+    private func trafficLimitSection(limit: Int64) -> some View {
+        let percentage = NodeBilling.trafficPercentage(
+            totalUp: status?.networkOutTotal ?? 0,
+            totalDown: status?.networkInTotal ?? 0,
+            limit: limit,
+            type: node.trafficLimitType
+        )
+        let barColor: Color = percentage >= 80 ? .red : (percentage >= 60 ? .orange : .green)
+
+        return VStack(spacing: 3) {
+            HStack {
+                Label {
+                    Text("Traffic")
+                } icon: {
+                    Image(systemName: "chart.pie.fill")
+                }
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.tertiary)
+
+                Spacer()
+
+                Text("\(percentage, specifier: "%.1f")% · \(NodeBilling.trafficTypeLabel(node.trafficLimitType)) \(formatBytes(limit))")
+                    .font(.caption2)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .contentTransition(.numericText())
+            }
+
+            Capsule()
+                .fill(Color(UIColor.systemGray5))
+                .frame(height: 5)
+                .overlay(alignment: .leading) {
+                    GeometryReader { proxy in
+                        Capsule()
+                            .fill(barColor.gradient)
+                            .frame(width: proxy.size.width * min(max(percentage, 0), 100) / 100)
+                            .animation(.smooth(duration: 0.5), value: percentage)
+                    }
+                }
+        }
+        .padding(.horizontal, 14)
+        .padding(.bottom, 12)
+        .padding(.top, -4)
     }
 
     // MARK: - Header

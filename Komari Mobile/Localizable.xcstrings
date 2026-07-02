@@ -102,6 +102,16 @@
         }
       }
     },
+    "%.1f%% · %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$.1f%% · %2$@ %3$@"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -532,6 +542,16 @@
         }
       }
     },
+    "%lldd left" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩 %lld 天"
+          }
+        }
+      }
+    },
     "%llds" : {
       "localizations" : {
         "zh-Hans" : {
@@ -558,6 +578,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "0-1"
+          }
+        }
+      }
+    },
+    "6-digit code" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6位验证码"
           }
         }
       }
@@ -882,6 +912,16 @@
         }
       }
     },
+    "Close" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
     "Command" : {
       "localizations" : {
         "zh-Hans" : {
@@ -902,12 +942,32 @@
         }
       }
     },
+    "Connect" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接"
+          }
+        }
+      }
+    },
     "Connect Dashboard" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "连接Dashboard"
+          }
+        }
+      }
+    },
+    "Connecting to %@…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在连接 %@…"
           }
         }
       }
@@ -1072,6 +1132,16 @@
         }
       }
     },
+    "Dashboard Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "面板版本"
+          }
+        }
+      }
+    },
     "Day (1-31)" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1222,6 +1292,16 @@
         }
       }
     },
+    "Disconnected" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已断开连接"
+          }
+        }
+      }
+    },
     "Disk" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1312,6 +1392,16 @@
         }
       }
     },
+    "Edit Traffic Report" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑流量报告"
+          }
+        }
+      }
+    },
     "Enable" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1382,6 +1472,16 @@
         }
       }
     },
+    "Enter your two-factor authentication code to open the terminal." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入双重身份验证码以打开终端。"
+          }
+        }
+      }
+    },
     "Error" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1418,6 +1518,16 @@
     "Exit code:" : {
       "shouldTranslate" : false
     },
+    "Expiration" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "到期时间"
+          }
+        }
+      }
+    },
     "Expiration Date" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1438,6 +1548,16 @@
         }
       }
     },
+    "Expired" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已过期"
+          }
+        }
+      }
+    },
     "Expires" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1454,6 +1574,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法加载二维码。"
+          }
+        }
+      }
+    },
+    "Free" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费"
           }
         }
       }
@@ -1527,6 +1657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隐藏"
+          }
+        }
+      }
+    },
+    "Hide All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏全部"
           }
         }
       }
@@ -1664,6 +1804,16 @@
         }
       }
     },
+    "Live" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实时"
+          }
+        }
+      }
+    },
     "lo" : {
       "shouldTranslate" : false
     },
@@ -1737,6 +1887,16 @@
         }
       }
     },
+    "Long-Term" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "长期"
+          }
+        }
+      }
+    },
     "Max" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1793,6 +1953,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最小"
+          }
+        }
+      }
+    },
+    "min %lld / max %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最小 %1$lld / 最大 %2$lld"
           }
         }
       }
@@ -1973,6 +2143,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无可用服务器来配置离线通知。"
+          }
+        }
+      }
+    },
+    "No servers available to configure traffic reports." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有可配置流量报告的服务器。"
           }
         }
       }
@@ -2276,6 +2456,16 @@
         }
       }
     },
+    "Regions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地区"
+          }
+        }
+      }
+    },
     "Remarks" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2322,6 +2512,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新排序服务器"
+          }
+        }
+      }
+    },
+    "Report Type" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "报告类型"
           }
         }
       }
@@ -2456,6 +2656,16 @@
         }
       }
     },
+    "Select at least one report type." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请至少选择一种报告类型。"
+          }
+        }
+      }
+    },
     "Semi-Annual" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2496,7 +2706,18 @@
         }
       }
     },
+    "Server Offline" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器离线"
+          }
+        }
+      }
+    },
     "Server Unavailable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -2536,12 +2757,42 @@
         }
       }
     },
+    "Show All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示全部"
+          }
+        }
+      }
+    },
+    "Showing last reported data." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在显示最后上报的数据。"
+          }
+        }
+      }
+    },
     "Skip" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳过"
+          }
+        }
+      }
+    },
+    "Smooth Peaks" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平滑削峰"
           }
         }
       }
@@ -2642,6 +2893,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "温度"
+          }
+        }
+      }
+    },
+    "Terminal" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "终端"
           }
         }
       }
@@ -2755,6 +3016,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "流量限制"
+          }
+        }
+      }
+    },
+    "Traffic Reports" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "流量报告"
+          }
+        }
+      }
+    },
+    "TrafficReport.Daily" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日"
+          }
+        }
+      }
+    },
+    "TrafficReport.Monthly" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月"
+          }
+        }
+      }
+    },
+    "TrafficReport.Weekly" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周"
           }
         }
       }
@@ -2985,76 +3304,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "轻松管理你的服务器。监控、分析和控制。"
-          }
-        }
-      }
-    },
-    "Terminal" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "终端"
-          }
-        }
-      }
-    },
-    "Close" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "关闭"
-          }
-        }
-      }
-    },
-    "Disconnected" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已断开连接"
-          }
-        }
-      }
-    },
-    "Connect" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连接"
-          }
-        }
-      }
-    },
-    "6-digit code" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6位验证码"
-          }
-        }
-      }
-    },
-    "Enter your two-factor authentication code to open the terminal." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "输入双重身份验证码以打开终端。"
-          }
-        }
-      }
-    },
-    "Connecting to %@…" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在连接 %@…"
           }
         }
       }

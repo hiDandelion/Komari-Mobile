@@ -261,6 +261,53 @@ class AdminHandler {
         }
     }
 
+    // MARK: - Traffic Reports
+
+    /// Fetch traffic report notification settings for all nodes
+    static func getTrafficReportNotifications() async throws -> [TrafficReportNotification] {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/notification/traffic-report/") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let (data, response) = try await RequestHandler.request(url: url)
+
+        guard response.statusCode == 200 else {
+            throw KomariError.invalidResponse("Fetch traffic reports failed with status \(response.statusCode)")
+        }
+
+        let decoder = JSONDecoder()
+        let baseResponse = try decoder.decode(KomariBaseResponse<[TrafficReportNotification]>.self, from: data)
+
+        guard baseResponse.isSuccess else {
+            throw KomariError.invalidResponse(baseResponse.message ?? "Fetch traffic reports failed")
+        }
+
+        return baseResponse.data ?? []
+    }
+
+    /// Edit traffic report notification settings for one or more nodes
+    static func editTrafficReportNotifications(entries: [[String: Any]]) async throws {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/notification/traffic-report/edit") else {
+            throw KomariError.invalidDashboardConfiguration
+        }
+
+        let bodyData = try JSONSerialization.data(withJSONObject: entries)
+
+        let (data, response) = try await RequestHandler.request(
+            url: url,
+            method: "POST",
+            body: bodyData,
+            headers: ["Content-Type": "application/json"]
+        )
+
+        guard response.statusCode == 200 else {
+            if let errorResponse = try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data) {
+                throw KomariError.invalidResponse(errorResponse.message ?? "Edit traffic reports failed")
+            }
+            throw KomariError.invalidResponse("Edit traffic reports failed with status \(response.statusCode)")
+        }
+    }
+
     // MARK: - Load Alerts
 
     /// Fetch all load alerts

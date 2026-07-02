@@ -8,36 +8,16 @@
 import SwiftUI
 import Charts
 
-enum LoadPeriod: String, CaseIterable {
-    case fourHours = "4h"
-    case oneDay = "1d"
-    case sevenDays = "7d"
-    case thirtyDays = "30d"
-
-    var hours: Int {
-        switch self {
-        case .fourHours: 4
-        case .oneDay: 24
-        case .sevenDays: 168
-        case .thirtyDays: 720
-        }
-    }
-
-    var chartPeriod: ChartPeriod {
-        switch self {
-        case .fourHours: .fourHours
-        case .oneDay: .oneDay
-        case .sevenDays: .sevenDays
-        case .thirtyDays: .thirtyDays
-        }
-    }
-}
-
 struct ServerDetailMonitorView: View {
+    @Environment(KMState.self) var state
     var node: NodeData
-    @State private var period: LoadPeriod = .oneDay
+    @State private var selectedRange: ChartRange = ChartRange(hours: 24, label: ChartRange.rangeLabel(hours: 24))
     @State private var records: [NodeRecord] = []
+    @State private var liveRecords: [NodeRecord] = []
     @State private var loadingState: LoadingState = .idle
+
+    /// Maximum number of points kept in the live buffer (matches komari-web)
+    private static let liveBufferSize = 150
 
     private static let rfc3339Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -58,6 +38,10 @@ struct ServerDetailMonitorView: View {
         return rfc3339FractionalFormatter.date(from: string)
     }
 
+    private var availableRanges: [ChartRange] {
+        ChartRange.loadRanges(publicInfo: state.publicInfo)
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -67,23 +51,42 @@ struct ServerDetailMonitorView: View {
             .padding()
         }
         .onAppear {
+            let ranges = availableRanges
+            if !ranges.contains(selectedRange) {
+                selectedRange = ranges.first(where: { $0.hours == 24 }) ?? ranges.last ?? .live
+            }
             fetchRecords()
         }
-        .onChange(of: period) {
+        .onChange(of: selectedRange) {
             records = []
+            liveRecords = []
             loadingState = .idle
             fetchRecords()
+        }
+        .onChange(of: availableRanges) {
+            // Public info can arrive after the view appears; keep the selection valid
+            if !availableRanges.contains(selectedRange) {
+                selectedRange = availableRanges.first(where: { $0.hours == 24 }) ?? availableRanges.last ?? .live
+            }
+        }
+        .onChange(of: state.liveStatus[node.uuid]?.time) {
+            appendLivePoint()
         }
     }
 
     private var periodPicker: some View {
-        Picker("Period", selection: $period) {
-            ForEach(LoadPeriod.allCases, id: \.rawValue) { p in
-                Text(p.rawValue)
-                    .tag(p)
+        Picker("Period", selection: $selectedRange) {
+            ForEach(availableRanges) { range in
+                Text(range.label)
+                    .tag(range)
             }
         }
         .pickerStyle(.segmented)
+    }
+
+    /// Records feeding the charts: the rolling live buffer in real-time mode, otherwise history
+    private var displayRecords: [NodeRecord] {
+        selectedRange.isLive ? liveRecords : records
     }
 
     @ViewBuilder
@@ -95,7 +98,7 @@ struct ServerDetailMonitorView: View {
                     .frame(maxWidth: .infinity, minHeight: 100)
                     .transition(.blurReplace)
             case .loaded:
-                if records.isEmpty {
+                if displayRecords.isEmpty {
                     Text("No Data")
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 100)
@@ -142,10 +145,10 @@ struct ServerDetailMonitorView: View {
         )
     }
 
-    private var currentChartPeriod: ChartPeriod { period.chartPeriod }
+    private var currentChartPeriod: ChartPeriod { selectedRange.chartPeriod }
 
     private var cpuChart: some View {
-        let points = records.compactMap { record -> MetricsDataPoint? in
+        let points = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let cpu = record.cpuUsage,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
@@ -157,7 +160,7 @@ struct ServerDetailMonitorView: View {
     }
 
     private var memoryChart: some View {
-        let points = records.compactMap { record -> MetricsDataPoint? in
+        let points = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let used = record.memoryUsed, let total = record.memoryTotal, total > 0,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
@@ -169,7 +172,7 @@ struct ServerDetailMonitorView: View {
     }
 
     private var diskChart: some View {
-        let points = records.compactMap { record -> MetricsDataPoint? in
+        let points = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let used = record.diskUsed, let total = record.diskTotal, total > 0,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
@@ -181,13 +184,13 @@ struct ServerDetailMonitorView: View {
     }
 
     private var networkSpeedChart: some View {
-        let inPoints = records.compactMap { record -> MetricsDataPoint? in
+        let inPoints = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let netIn = record.networkIn,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
             return MetricsDataPoint(date: date, value: Double(netIn) / 1024)
         }
-        let outPoints = records.compactMap { record -> MetricsDataPoint? in
+        let outPoints = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let netOut = record.networkOut,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
@@ -207,13 +210,13 @@ struct ServerDetailMonitorView: View {
     }
 
     private var connectionsChart: some View {
-        let tcpPoints = records.compactMap { record -> MetricsDataPoint? in
+        let tcpPoints = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let tcp = record.connectionCount,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
             return MetricsDataPoint(date: date, value: Double(tcp))
         }
-        let udpPoints = records.compactMap { record -> MetricsDataPoint? in
+        let udpPoints = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let udp = record.connectionCountUDP,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
@@ -233,7 +236,7 @@ struct ServerDetailMonitorView: View {
     }
 
     private var processChart: some View {
-        let points = records.compactMap { record -> MetricsDataPoint? in
+        let points = displayRecords.compactMap { record -> MetricsDataPoint? in
             guard let process = record.processCount,
                   let timeStr = record.time,
                   let date = Self.parseDate(timeStr) else { return nil }
@@ -246,9 +249,9 @@ struct ServerDetailMonitorView: View {
 
     @ViewBuilder
     private var gpuChart: some View {
-        let hasGPU = records.contains { $0.gpuUsage != nil }
+        let hasGPU = displayRecords.contains { $0.gpuUsage != nil }
         if hasGPU {
-            let points = records.compactMap { record -> MetricsDataPoint? in
+            let points = displayRecords.compactMap { record -> MetricsDataPoint? in
                 guard let gpu = record.gpuUsage,
                       let timeStr = record.time,
                       let date = Self.parseDate(timeStr) else { return nil }
@@ -262,9 +265,13 @@ struct ServerDetailMonitorView: View {
 
     private func fetchRecords() {
         loadingState = .loading
+        if selectedRange.isLive {
+            fetchRecentRecords()
+            return
+        }
         Task {
             do {
-                let result = try await RecordHandler.getRecords(uuid: node.uuid, hours: period.hours)
+                let result = try await RecordHandler.getRecords(uuid: node.uuid, hours: selectedRange.hours)
                 // Sort records by time ascending (matching komari-web behavior)
                 let sorted = result.sorted { a, b in
                     guard let ta = a.time, let tb = b.time,
@@ -280,6 +287,36 @@ struct ServerDetailMonitorView: View {
                     loadingState = .error(error.localizedDescription)
                 }
             }
+        }
+    }
+
+    // MARK: - Live Mode
+
+    private func fetchRecentRecords() {
+        Task {
+            do {
+                let recent = try await PublicHandler.getRecentRecords(uuid: node.uuid)
+                let seeded = recent.suffix(Self.liveBufferSize).map { NodeRecord(recent: $0, node: node) }
+                withAnimation {
+                    liveRecords = seeded
+                    loadingState = .loaded
+                }
+            } catch {
+                withAnimation {
+                    loadingState = .error(error.localizedDescription)
+                }
+            }
+        }
+    }
+
+    private func appendLivePoint() {
+        guard selectedRange.isLive, case .loaded = loadingState,
+              let status = state.liveStatus[node.uuid] else { return }
+        // Skip duplicates (the auto-refresh may deliver the same sample twice)
+        guard liveRecords.last?.time != status.time else { return }
+        liveRecords.append(NodeRecord(liveStatus: status))
+        if liveRecords.count > Self.liveBufferSize {
+            liveRecords.removeFirst(liveRecords.count - Self.liveBufferSize)
         }
     }
 }

@@ -81,7 +81,43 @@ struct ServerListView: View {
             }
             return true
         }
-        return grouped.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
+        return grouped.filter { matchesSearch($0) }
+    }
+
+    /// Match against name, OS, arch, region, group, tags, price and online/offline
+    /// status keywords, mirroring komari-web's search semantics
+    private func matchesSearch(_ node: NodeData) -> Bool {
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        if query.isEmpty { return true }
+
+        var haystack: [String] = [
+            node.name,
+            node.os,
+            GetOSLogo.name(for: node.os),
+            node.arch,
+            node.region,
+            node.group ?? "",
+            node.tags ?? ""
+        ]
+        if let price = node.price, price != 0 {
+            haystack.append(String(price))
+            if price.truncatingRemainder(dividingBy: 1) == 0 {
+                haystack.append(String(Int(price)))
+            }
+        }
+        haystack.append(
+            state.onlineUUIDs.contains(node.uuid)
+                ? String(localized: "Online")
+                : String(localized: "Offline")
+        )
+        return haystack.contains { $0.localizedCaseInsensitiveContains(query) }
+    }
+
+    private var navigationTitle: String {
+        if let sitename = state.publicInfo?.sitename, !sitename.isEmpty {
+            return sitename
+        }
+        return String(localized: "Servers")
     }
 
     private let columns: [GridItem] = [GridItem(.adaptive(minimum: 320, maximum: 450))]
@@ -186,6 +222,16 @@ struct ServerListView: View {
                     }
             } else {
                 ScrollView {
+                    if !state.nodes.isEmpty {
+                        DashboardSummaryView(
+                            nodes: state.nodes,
+                            liveStatus: state.liveStatus,
+                            onlineUUIDs: state.onlineUUIDs
+                        )
+                        .safeAreaPadding(.horizontal, 15)
+                        .padding(.bottom, 8)
+                    }
+
                     if !state.groupNames.isEmpty {
                         groupPicker
                             .safeAreaPadding(.horizontal, 15)
@@ -194,7 +240,7 @@ struct ServerListView: View {
 
                     serverList
                 }
-                .navigationTitle("Servers")
+                .navigationTitle(navigationTitle)
                 .searchable(text: $searchText)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {

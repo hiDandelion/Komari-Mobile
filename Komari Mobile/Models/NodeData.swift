@@ -27,6 +27,7 @@ struct NodeData: Codable, Identifiable, Hashable {
     let price: Double?
     let billingCycle: Int?
     let currency: String?
+    let expiredAt: String?
     let group: String?
     let tags: String?
     let hidden: Bool?
@@ -51,6 +52,7 @@ struct NodeData: Codable, Identifiable, Hashable {
         case swapTotal = "swap_total"
         case diskTotal = "disk_total"
         case billingCycle = "billing_cycle"
+        case expiredAt = "expired_at"
         case trafficLimit = "traffic_limit"
         case trafficLimitType = "traffic_limit_type"
         case createdAt = "created_at"

@@ -8,33 +8,23 @@
 import SwiftUI
 import Charts
 
-enum PingPeriod: String, CaseIterable {
-    case oneHour = "1h"
-    case sixHours = "6h"
-    case twelveHours = "12h"
-    case oneDay = "1d"
-
-    var hours: Int {
-        switch self {
-        case .oneHour: 1
-        case .sixHours: 6
-        case .twelveHours: 12
-        case .oneDay: 24
-        }
-    }
-}
-
 struct PingChartView: View {
+    @Environment(KMState.self) var state
     var node: NodeData
-    @State private var period: PingPeriod = .oneHour
+    @State private var selectedRange: ChartRange = ChartRange(hours: 1, label: ChartRange.rangeLabel(hours: 1))
     @State private var pingRecords: [PingRecord] = []
     @State private var tasks: [PingTaskInfo] = []
     @State private var loadingState: LoadingState = .idle
     @State private var hiddenTaskIds: Set<Int> = []
+    @AppStorage("KMPingChartCutPeak", store: KMCore.userDefaults) private var cutPeak: Bool = false
 
     private static let taskColors: [Color] = [
         .red, .green, .blue, .orange, .purple, .teal, .pink, .yellow
     ]
+
+    private var availableRanges: [ChartRange] {
+        ChartRange.pingRanges(publicInfo: state.publicInfo)
+    }
 
     var body: some View {
         ScrollView {
@@ -45,21 +35,31 @@ struct PingChartView: View {
             .padding()
         }
         .onAppear {
+            let ranges = availableRanges
+            if !ranges.contains(selectedRange) {
+                selectedRange = ranges.first ?? ChartRange(hours: 1, label: ChartRange.rangeLabel(hours: 1))
+            }
             fetchPingRecords()
         }
-        .onChange(of: period) {
+        .onChange(of: selectedRange) {
             pingRecords = []
             tasks = []
             loadingState = .idle
             fetchPingRecords()
         }
+        .onChange(of: availableRanges) {
+            // Public info can arrive after the view appears; keep the selection valid
+            if !availableRanges.contains(selectedRange) {
+                selectedRange = availableRanges.first ?? ChartRange(hours: 1, label: ChartRange.rangeLabel(hours: 1))
+            }
+        }
     }
 
     private var periodPicker: some View {
-        Picker("Period", selection: $period) {
-            ForEach(PingPeriod.allCases, id: \.rawValue) { p in
-                Text(p.rawValue)
-                    .tag(p)
+        Picker("Period", selection: $selectedRange) {
+            ForEach(availableRanges) { range in
+                Text(range.label)
+                    .tag(range)
             }
         }
         .pickerStyle(.segmented)
@@ -82,6 +82,7 @@ struct PingChartView: View {
                 } else {
                     VStack(spacing: 10) {
                         taskSummaryCard
+                        chartControls
                         pingChart
                     }
                     .transition(.blurReplace)
@@ -148,6 +149,11 @@ struct PingChartView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
+                            if let min = task.min, let max = task.max {
+                                Text("min \(Int(min)) / max \(Int(max))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         Image(systemName: isHidden ? "eye.slash" : "eye")
                             .font(.caption)
@@ -174,6 +180,42 @@ struct PingChartView: View {
         )
     }
 
+    // MARK: - Chart Controls
+
+    private var allHidden: Bool {
+        hiddenTaskIds.count == tasks.count
+    }
+
+    private var chartControls: some View {
+        HStack {
+            Toggle(isOn: $cutPeak.animation(.smooth(duration: 0.3))) {
+                Label("Smooth Peaks", systemImage: "waveform.path")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .fixedSize()
+
+            Spacer()
+
+            Button {
+                withAnimation(.smooth(duration: 0.3)) {
+                    if allHidden {
+                        hiddenTaskIds = []
+                    } else {
+                        hiddenTaskIds = Set(tasks.map(\.id))
+                    }
+                }
+            } label: {
+                Label(allHidden ? String(localized: "Show All") : String(localized: "Hide All"),
+                      systemImage: allHidden ? "eye" : "eye.slash")
+                    .font(.subheadline)
+            }
+        }
+        .padding(.horizontal, 4)
+    }
+
     private var pingChart: some View {
         let chartPoints = buildChartData()
         return VStack(spacing: 10) {
@@ -195,7 +237,7 @@ struct PingChartView: View {
                             series: .value("Task", point.taskName)
                         )
                         .foregroundStyle(point.color)
-                        .interpolationMethod(.linear)
+                        .interpolationMethod(cutPeak ? .catmullRom : .linear)
                     }
                     .chartYAxis {
                         AxisMarks(position: .leading) { value in
@@ -242,20 +284,33 @@ struct PingChartView: View {
 
     private func buildChartData() -> [PingChartPoint] {
         var points: [PingChartPoint] = []
-        let taskMap = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0.name) })
 
-        for record in pingRecords {
-            guard let taskId = record.taskId,
-                  !hiddenTaskIds.contains(taskId),
-                  let timeStr = record.time,
-                  let date = ServerDetailMonitorView.parseDate(timeStr),
-                  let value = record.value,
-                  value >= 0,
-                  let taskName = taskMap[taskId] else { continue }
+        for (index, task) in tasks.enumerated() {
+            guard !hiddenTaskIds.contains(task.id) else { continue }
+            let color = Self.taskColors[index % Self.taskColors.count]
 
-            let taskIndex = tasks.firstIndex(where: { $0.id == taskId }) ?? 0
-            let color = Self.taskColors[taskIndex % Self.taskColors.count]
-            points.append(PingChartPoint(date: date, value: value, taskName: taskName, color: color))
+            let samples = pingRecords
+                .filter { $0.taskId == task.id }
+                .compactMap { record -> (date: Date, value: Double)? in
+                    guard let timeStr = record.time,
+                          let date = ServerDetailMonitorView.parseDate(timeStr),
+                          let value = record.value else { return nil }
+                    return (date, value)
+                }
+                .sorted { $0.date < $1.date }
+
+            let times = samples.map(\.date)
+            // Negative values encode packet loss; treat them as gaps
+            var values: [Double?] = samples.map { $0.value >= 0 ? $0.value : nil }
+
+            if cutPeak {
+                values = cutPeakSeries(interpolateNilsLinear(times: times, values: values))
+            }
+
+            for (i, value) in values.enumerated() {
+                guard let value else { continue }
+                points.append(PingChartPoint(date: times[i], value: value, taskName: task.name, color: color))
+            }
         }
         return points
     }
@@ -264,7 +319,7 @@ struct PingChartView: View {
         loadingState = .loading
         Task {
             do {
-                let result = try await RecordHandler.getPingRecords(uuid: node.uuid, hours: period.hours)
+                let result = try await RecordHandler.getPingRecords(uuid: node.uuid, hours: selectedRange.hours)
                 withAnimation {
                     pingRecords = result.records ?? []
                     tasks = result.tasks ?? []
