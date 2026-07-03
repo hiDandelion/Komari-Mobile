@@ -14,7 +14,6 @@ struct ServerListView: View {
     @State private var sortOrder: SortOrder = .ascending
     @State private var searchText: String = ""
     @State private var selectedGroup: String?
-    @Namespace private var tagNamespace
 
     @State private var isShowDeleteServerAlert: Bool = false
     @State private var serverToDelete: NodeData?
@@ -315,39 +314,63 @@ struct ServerListView: View {
 
     private var groupPicker: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 groupTag(group: nil)
                 ForEach(state.groupNames, id: \.self) { group in
                     groupTag(group: group)
                 }
             }
+            .frame(height: 38)
         }
         .scrollIndicators(.never)
+        .animation(tagAnimation, value: selectedGroup)
+    }
+
+    private var tagAnimation: Animation {
+        .interpolatingSpring(duration: 0.3, bounce: 0, initialVelocity: 0)
     }
 
     private func groupTag(group: String?) -> some View {
-        Button(action: {
+        let isActive = selectedGroup == group
+
+        return HStack(spacing: isActive ? 6 : 0) {
+            Image(systemName: group == nil ? "square.grid.2x2.fill" : "folder.fill")
+                .font(.body)
+                .frame(width: isActive ? 20 : 0, alignment: .leading)
+                .animation(tagAnimation.speed(isActive ? 1 : 2.5)) { content in
+                    content
+                        .opacity(isActive ? 1 : 0)
+                }
+
+            Text(group == nil ? String(localized: "All(\(state.nodes.count))") : group!)
+                .font(.callout)
+                .fontWeight(.semibold)
+                .fixedSize(horizontal: true, vertical: false)
+                .lineLimit(1)
+        }
+        .foregroundStyle(isActive ? .white : .gray)
+        .padding(.horizontal, isActive ? 20 : 15)
+        .frame(maxHeight: .infinity)
+        .background {
+            ZStack {
+                Capsule()
+                    .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    .opacity(isActive ? 0 : 1)
+
+                Capsule()
+                    .fill(.tint)
+                    .opacity(isActive ? 1 : 0)
+            }
+            .compositingGroup()
+        }
+        .clipShape(.capsule)
+        .contentShape(.capsule)
+        .geometryGroup()
+        .onTapGesture {
             withAnimation(.snappy) {
                 selectedGroup = group
             }
-        }) {
-            Text(group == nil ? String(localized: "All(\(state.nodes.count))") : group!)
-                .font(.callout)
-                .foregroundStyle(selectedGroup == group ? .white : .primary)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 15)
-                .background {
-                    if selectedGroup == group {
-                        Capsule()
-                            .fill(.tint)
-                            .matchedGeometryEffect(id: "ACTIVETAG", in: tagNamespace)
-                    } else {
-                        Capsule()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                    }
-                }
         }
-        .buttonStyle(.plain)
     }
 
     private var serverList: some View {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftTerm
 
 /// Full-screen remote terminal for a node. Mirrors the komari-web terminal page flow:
 /// check whether the account has 2FA enabled (the terminal endpoint re-verifies it),
