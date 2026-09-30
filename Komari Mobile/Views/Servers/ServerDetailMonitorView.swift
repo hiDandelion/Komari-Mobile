@@ -249,7 +249,8 @@ struct ServerDetailMonitorView: View {
 
     @ViewBuilder
     private var gpuChart: some View {
-        let hasGPU = displayRecords.contains { $0.gpuUsage != nil }
+        // History always carries a `gpu` value (0 without a GPU)
+        let hasGPU = !node.gpuName.isEmpty || displayRecords.contains { ($0.gpuUsage ?? 0) > 0 }
         if hasGPU {
             let points = displayRecords.compactMap { record -> MetricsDataPoint? in
                 guard let gpu = record.gpuUsage,
@@ -272,12 +273,11 @@ struct ServerDetailMonitorView: View {
         Task {
             do {
                 let result = try await RecordHandler.getRecords(uuid: node.uuid, hours: selectedRange.hours)
-                // Sort records by time ascending (matching komari-web behavior)
-                let sorted = result.sorted { a, b in
-                    guard let ta = a.time, let tb = b.time,
-                          let da = Self.parseDate(ta), let db = Self.parseDate(tb) else { return false }
-                    return da < db
-                }
+                // Sort records by time ascending (matching komari-web behavior); parse each date once
+                let sorted = result
+                    .map { record in (record.fillingTotals(from: node), record.time.flatMap(Self.parseDate) ?? .distantPast) }
+                    .sorted { $0.1 < $1.1 }
+                    .map(\.0)
                 withAnimation {
                     records = sorted
                     loadingState = .loaded

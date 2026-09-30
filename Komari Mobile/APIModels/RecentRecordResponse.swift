@@ -91,13 +91,39 @@ extension NodeRecord {
         )
     }
 
+    /// History records from Komari ≥ 1.5 carry no memory/swap/disk totals or temperature
+    /// (those metrics were dropped from the metric store), so take the totals from `node`.
+    func fillingTotals(from node: NodeData) -> NodeRecord {
+        NodeRecord(
+            client: client,
+            time: time,
+            cpuUsage: cpuUsage,
+            gpuUsage: gpuUsage,
+            memoryUsed: memoryUsed,
+            memoryTotal: (memoryTotal ?? 0) > 0 ? memoryTotal : node.memoryTotal,
+            swapUsed: swapUsed,
+            swapTotal: (swapTotal ?? 0) > 0 ? swapTotal : node.swapTotal,
+            load: load,
+            temperature: (temperature ?? 0) > 0 ? temperature : nil,
+            diskUsed: diskUsed,
+            diskTotal: (diskTotal ?? 0) > 0 ? diskTotal : node.diskTotal,
+            networkIn: networkIn,
+            networkOut: networkOut,
+            networkTotalUp: networkTotalUp,
+            networkTotalDown: networkTotalDown,
+            processCount: processCount,
+            connectionCount: connectionCount,
+            connectionCountUDP: connectionCountUDP
+        )
+    }
+
     /// Convert a live status snapshot into the flat record format used by the charts.
     init(liveStatus: NodeLiveStatus) {
         self.init(
             client: liveStatus.client,
             time: liveStatus.time,
             cpuUsage: liveStatus.cpuUsage,
-            gpuUsage: liveStatus.gpuUsage,
+            gpuUsage: liveStatus.hasGPU ? liveStatus.gpuUsage : nil,
             memoryUsed: liveStatus.memoryUsed,
             memoryTotal: liveStatus.memoryTotal,
             swapUsed: liveStatus.swapUsed,
@@ -111,7 +137,7 @@ extension NodeRecord {
             networkTotalUp: liveStatus.networkOutTotal,
             networkTotalDown: liveStatus.networkInTotal,
             processCount: liveStatus.processCount,
-            connectionCount: liveStatus.connectionCount,
+            connectionCount: liveStatus.tcpConnectionCount,
             connectionCountUDP: liveStatus.connectionCountUDP
         )
     }

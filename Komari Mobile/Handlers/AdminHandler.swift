@@ -107,7 +107,7 @@ class AdminHandler {
 
     /// Fetch all ping tasks
     static func getPingTasks() async throws -> [PingTask] {
-        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/ping") else {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/ping/") else {
             throw KomariError.invalidDashboardConfiguration
         }
 
@@ -128,7 +128,7 @@ class AdminHandler {
     }
 
     /// Add a new ping task
-    static func addPingTask(name: String, type: String, target: String, clients: [String], interval: Int) async throws {
+    static func addPingTask(name: String, type: String, target: String, clients: [String], interval: Int, defaultOn: Bool) async throws {
         guard let url = KMCore.getAPIURL(endpoint: "/api/admin/ping/add") else {
             throw KomariError.invalidDashboardConfiguration
         }
@@ -138,7 +138,8 @@ class AdminHandler {
             "type": type,
             "target": target,
             "clients": clients,
-            "interval": interval
+            "interval": interval,
+            "default_on": defaultOn
         ]
         let bodyData = try JSONSerialization.data(withJSONObject: payload)
 
@@ -159,7 +160,8 @@ class AdminHandler {
     }
 
     /// Edit an existing ping task
-    static func editPingTask(id: Int, name: String, type: String, target: String, clients: [String], interval: Int) async throws {
+    /// The server overwrites every field, so `defaultOn` must carry the task's current value.
+    static func editPingTask(id: Int, name: String, type: String, target: String, clients: [String], interval: Int, defaultOn: Bool) async throws {
         guard let url = KMCore.getAPIURL(endpoint: "/api/admin/ping/edit") else {
             throw KomariError.invalidDashboardConfiguration
         }
@@ -170,7 +172,8 @@ class AdminHandler {
             "type": type,
             "target": target,
             "clients": clients,
-            "interval": interval
+            "interval": interval,
+            "default_on": defaultOn
         ]
         let payload: [String: Any] = ["tasks": [task]]
         let bodyData = try JSONSerialization.data(withJSONObject: payload)
@@ -261,7 +264,7 @@ class AdminHandler {
         }
     }
 
-    // MARK: - Traffic Reports
+    // MARK: - Traffic Reports (Komari < 1.5; now provided by plugins)
 
     /// Fetch traffic report notification settings for all nodes
     static func getTrafficReportNotifications() async throws -> [TrafficReportNotification] {
@@ -308,7 +311,7 @@ class AdminHandler {
         }
     }
 
-    // MARK: - Load Alerts
+    // MARK: - Load Alerts (Komari < 1.5; now provided by plugins)
 
     /// Fetch all load alerts
     static func getLoadAlerts() async throws -> [LoadAlert] {
@@ -424,7 +427,7 @@ class AdminHandler {
 
     /// Fetch dashboard settings
     static func getSettings() async throws -> DashboardSettings {
-        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/settings") else {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/settings/") else {
             throw KomariError.invalidDashboardConfiguration
         }
 
@@ -446,7 +449,7 @@ class AdminHandler {
 
     /// Update dashboard settings (partial update)
     static func updateSettings(changes: [String: Any]) async throws {
-        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/settings") else {
+        guard let url = KMCore.getAPIURL(endpoint: "/api/admin/settings/") else {
             throw KomariError.invalidDashboardConfiguration
         }
 
@@ -568,12 +571,15 @@ class AdminHandler {
     }
 
     /// Update password
-    static func updatePassword(uuid: String, password: String) async throws {
+    static func updatePassword(uuid: String, password: String, twoFactorCode: String? = nil) async throws {
         guard let url = KMCore.getAPIURL(endpoint: "/api/admin/update/user") else {
             throw KomariError.invalidDashboardConfiguration
         }
 
-        let payload: [String: Any] = ["uuid": uuid, "password": password]
+        var payload: [String: Any] = ["uuid": uuid, "password": password]
+        if let twoFactorCode, !twoFactorCode.isEmpty {
+            payload["2fa_code"] = twoFactorCode
+        }
         let bodyData = try JSONSerialization.data(withJSONObject: payload)
 
         let (data, response) = try await RequestHandler.request(
@@ -639,15 +645,16 @@ class AdminHandler {
         }
     }
 
-    /// Disable 2FA
-    static func disable2FA() async throws {
+    /// Disable 2FA (sensitive: requires a current 2FA code)
+    static func disable2FA(twoFactorCode: String?) async throws {
         guard let url = KMCore.getAPIURL(endpoint: "/api/admin/2fa/disable") else {
             throw KomariError.invalidDashboardConfiguration
         }
 
         let (data, response) = try await RequestHandler.request(
             url: url,
-            method: "POST"
+            method: "POST",
+            headers: RequestHandler.twoFactorHeaders(twoFactorCode)
         )
 
         guard response.statusCode == 200 else {
@@ -694,7 +701,7 @@ class AdminHandler {
     // MARK: - Remote Exec
 
     /// Execute a command on selected nodes
-    static func execTask(command: String, clients: [String]) async throws -> ExecTaskData {
+    static func execTask(command: String, clients: [String], twoFactorCode: String? = nil) async throws -> ExecTaskData {
         guard let url = KMCore.getAPIURL(endpoint: "/api/admin/task/exec") else {
             throw KomariError.invalidDashboardConfiguration
         }
@@ -709,7 +716,7 @@ class AdminHandler {
             url: url,
             method: "POST",
             body: bodyData,
-            headers: ["Content-Type": "application/json"]
+            headers: RequestHandler.twoFactorHeaders(twoFactorCode).merging(["Content-Type": "application/json"]) { current, _ in current }
         )
 
         guard response.statusCode == 200 else {
@@ -809,5 +816,37 @@ class AdminHandler {
         guard baseResponse.isSuccess else {
             throw KomariError.invalidResponse(baseResponse.message ?? "Reorder clients failed")
         }
+    }
+
+    // MARK: - Notification Channels (Komari ≥ 1.5)
+
+    /// Registered notification channels (built-in `webhook` plus any added by plugins)
+    static func listNotificationChannels() async throws -> [NotificationChannel] {
+        try await RPC2Handler.call(method: "admin:listNotificationChannels")
+    }
+
+    /// A channel's declared fields together with its saved values (defaults filled in)
+    static func getNotificationChannelConfiguration(id: String) async throws -> NotificationChannelConfiguration {
+        try await RPC2Handler.call(method: "admin:getNotificationChannelConfiguration", params: ["id": id])
+    }
+
+    static func setNotificationChannelConfiguration(id: String, values: [String: JSONValue]) async throws {
+        struct Params: Encodable {
+            let id: String
+            let data: [String: JSONValue]
+        }
+        try await RPC2Handler.callIgnoringResult(method: "admin:setNotificationChannelConfiguration", params: Params(id: id, data: values))
+    }
+
+    /// Sends a test notification through the active channel
+    static func sendTestNotification() async throws {
+        try await RPC2Handler.callIgnoringResult(method: "admin:testSendMessage")
+    }
+
+    // MARK: - Agent
+
+    /// Asks an online agent to switch to another release: "latest", a line such as "1.2.*", or an exact version
+    static func switchAgentVersion(uuid: String, version: String) async throws {
+        try await RPC2Handler.callIgnoringResult(method: "admin:switchAgentVersion", params: ["uuid": uuid, "version": version])
     }
 }

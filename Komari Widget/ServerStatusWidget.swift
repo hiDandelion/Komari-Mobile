@@ -84,16 +84,19 @@ struct WidgetUsageBar: View {
                 Text("\(Int(clampedValue))%")
                     .font(.system(size: 10, weight: .medium, design: .rounded))
             }
+            // The fill is never narrower than it is tall and is clipped to the track, so low values
+            // show a sliver along the rounded end instead of a squashed capsule sticking out of it.
             GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color(UIColor.systemGray3))
-                    Capsule()
-                        .fill(thresholdColor(for: clampedValue))
-                        .frame(width: max(0, geo.size.width * CGFloat(clampedValue / 100)))
-                }
+                let width = geo.size.width * CGFloat(clampedValue / 100)
+                let fillWidth = max(width, geo.size.height)
+                Capsule()
+                    .fill(thresholdColor(for: clampedValue))
+                    .frame(width: fillWidth, height: geo.size.height)
+                    .offset(x: width - fillWidth)
             }
             .frame(height: 6)
+            .background(Capsule().fill(Color(UIColor.systemGray3)))
+            .clipShape(Capsule())
         }
     }
 }

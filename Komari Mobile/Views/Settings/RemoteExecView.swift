@@ -18,6 +18,12 @@ struct RemoteExecView: View {
     @State private var errorMessage: String?
     @State private var taskId: String?
     @State private var pollTask: Task<Void, Never>?
+    /// Offline targets: the dashboard delivers the command once they reconnect
+    @State private var queuedClients: Set<String> = []
+    /// Remote exec is a sensitive operation; accounts with 2FA must confirm with a code
+    @State private var requiresTFA = false
+    @State private var isShowTFAPrompt = false
+    @State private var tfaCode = ""
 
     private var isValid: Bool {
         !command.trimmingCharacters(in: .whitespaces).isEmpty && !selectedClients.isEmpty
@@ -48,7 +54,7 @@ struct RemoteExecView: View {
                 } else {
                     if #available(iOS 26.0, *) {
                         Button(role: .confirm) {
-                            executeCommand()
+                            requestExecution()
                         } label: {
                             Label("Execute", systemImage: "play.fill")
                         }
@@ -56,7 +62,7 @@ struct RemoteExecView: View {
                     }
                     else {
                         Button("Execute") {
-                            executeCommand()
+                            requestExecution()
                         }
                         .disabled(!isValid)
                     }
@@ -65,6 +71,20 @@ struct RemoteExecView: View {
         }
         .onDisappear {
             pollTask?.cancel()
+        }
+        .task {
+            // API-key access reports no 2FA and is exempt from the check.
+            requiresTFA = (try? await AuthHandler.getMe())?.tfaEnabled ?? false
+        }
+        .alert("Two-Factor Authentication", isPresented: $isShowTFAPrompt) {
+            TextField("6-digit code", text: $tfaCode)
+                .keyboardType(.numberPad)
+            Button("Execute") {
+                executeCommand(tfaCode: tfaCode)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Enter your two-factor authentication code to run the command.")
         }
     }
 
@@ -124,27 +144,39 @@ struct RemoteExecView: View {
     private var resultsSection: some View {
         Section("Results") {
             ForEach(results) { result in
-                ExecResultRow(result: result, nodes: state.nodes)
+                ExecResultRow(result: result, nodes: state.nodes, isQueued: queuedClients.contains(result.client ?? ""))
             }
         }
     }
 
     // MARK: - Execution
 
-    private func executeCommand() {
+    private func requestExecution() {
+        if requiresTFA {
+            tfaCode = ""
+            isShowTFAPrompt = true
+        } else {
+            executeCommand(tfaCode: nil)
+        }
+    }
+
+    private func executeCommand(tfaCode: String?) {
         isExecuting = true
         errorMessage = nil
         results = []
         taskId = nil
+        queuedClients = []
         pollTask?.cancel()
 
         Task {
             do {
                 let taskData = try await AdminHandler.execTask(
                     command: command.trimmingCharacters(in: .whitespaces),
-                    clients: Array(selectedClients)
+                    clients: Array(selectedClients),
+                    twoFactorCode: tfaCode
                 )
                 taskId = taskData.taskId
+                queuedClients = Set(taskData.queuedClients ?? [])
                 isExecuting = false
 
                 if let id = taskData.taskId {
@@ -171,7 +203,9 @@ struct RemoteExecView: View {
                         results = fetched
                     }
 
-                    let allFinished = fetched.allSatisfy { $0.finishedAt != nil }
+                    let allFinished = fetched
+                        .filter { !queuedClients.contains($0.client ?? "") }
+                        .allSatisfy { $0.finishedAt != nil }
                     if allFinished {
                         withAnimation { isPolling = false }
                         return
@@ -187,7 +221,7 @@ struct RemoteExecView: View {
                 if Date().timeIntervalSince(startTime) >= timeout {
                     withAnimation {
                         results = results.map { r in
-                            if r.finishedAt == nil {
+                            if r.finishedAt == nil, !queuedClients.contains(r.client ?? "") {
                                 return ExecResult(
                                     taskId: r.taskId,
                                     client: r.client,
@@ -216,6 +250,7 @@ struct RemoteExecView: View {
 private struct ExecResultRow: View {
     let result: ExecResult
     let nodes: [NodeData]
+    let isQueued: Bool
 
     private var nodeName: String {
         if let info = result.clientInfo, let name = info.name, !name.isEmpty {
@@ -230,7 +265,7 @@ private struct ExecResultRow: View {
 
     private var status: ExecStatus {
         if result.finishedAt == nil {
-            return .running
+            return isQueued ? .queued : .running
         }
         if result.exitCode == -1 {
             return .timeout
@@ -294,11 +329,12 @@ private struct ExecResultRow: View {
 // MARK: - Status
 
 private enum ExecStatus {
-    case running, success, failed, timeout
+    case running, queued, success, failed, timeout
 
     var label: String {
         switch self {
         case .running: "Running"
+        case .queued: "Queued"
         case .success: "Success"
         case .failed: "Failed"
         case .timeout: "Timeout"
@@ -308,6 +344,7 @@ private enum ExecStatus {
     var icon: String {
         switch self {
         case .running: "progress.indicator"
+        case .queued: "tray.full"
         case .success: "checkmark"
         case .failed: "exclamationmark.triangle"
         case .timeout: "clock.badge.exclamationmark"
@@ -317,6 +354,7 @@ private enum ExecStatus {
     var color: Color {
         switch self {
         case .running: .blue
+        case .queued: .secondary
         case .success: .green
         case .failed: .red
         case .timeout: .orange

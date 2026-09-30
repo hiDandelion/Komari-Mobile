@@ -29,6 +29,15 @@ private enum PingType: String, CaseIterable {
     }
 }
 
+private struct PingTaskDraft {
+    let name: String
+    let type: String
+    let target: String
+    let clients: [String]
+    let interval: Int
+    let defaultOn: Bool
+}
+
 struct PingTasksView: View {
     @Environment(KMState.self) private var state
 
@@ -81,20 +90,20 @@ struct PingTasksView: View {
             }
         }
         .sheet(isPresented: $isShowAddSheet) {
-            PingTaskFormView(nodes: state.nodes) { name, type, target, clients, interval in
+            PingTaskFormView(nodes: state.nodes) { draft in
                 try await AdminHandler.addPingTask(
-                    name: name, type: type, target: target,
-                    clients: clients, interval: interval
+                    name: draft.name, type: draft.type, target: draft.target,
+                    clients: draft.clients, interval: draft.interval, defaultOn: draft.defaultOn
                 )
                 await loadTasks()
             }
         }
         .sheet(item: $taskToEdit) { task in
-            PingTaskFormView(nodes: state.nodes, existingTask: task) { name, type, target, clients, interval in
+            PingTaskFormView(nodes: state.nodes, existingTask: task) { draft in
                 guard let id = task.id else { return }
                 try await AdminHandler.editPingTask(
-                    id: id, name: name, type: type, target: target,
-                    clients: clients, interval: interval
+                    id: id, name: draft.name, type: draft.type, target: draft.target,
+                    clients: draft.clients, interval: draft.interval, defaultOn: draft.defaultOn
                 )
                 await loadTasks()
             }
@@ -156,7 +165,10 @@ struct PingTasksView: View {
         do {
             let fetched = try await AdminHandler.getPingTasks()
             withAnimation {
-                tasks = fetched.sorted { ($0.id ?? 0) > ($1.id ?? 0) }
+                // Same order as the dashboard: weight, then id
+                tasks = fetched.sorted {
+                    (($0.weight ?? 0), ($0.id ?? 0)) < (($1.weight ?? 0), ($1.id ?? 0))
+                }
                 isLoading = false
                 errorMessage = nil
             }
@@ -210,7 +222,14 @@ private struct PingTaskRow: View {
                     .foregroundStyle(.secondary)
                 }
 
-                if let clients = task.clients {
+                if task.defaultOn == true {
+                    HStack {
+                        Image(systemName: "server.rack")
+                        Text("All Servers")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                } else if let clients = task.clients {
                     HStack {
                         Image(systemName: "server.rack")
                         Text(serverSummary(clients))
@@ -251,18 +270,19 @@ private struct PingTaskFormView: View {
 
     let nodes: [NodeData]
     let existingTask: PingTask?
-    let onSave: (String, String, String, [String], Int) async throws -> Void
+    let onSave: (PingTaskDraft) async throws -> Void
 
     @State private var name: String = ""
     @State private var pingType: PingType = .icmp
     @State private var target: String = ""
     @State private var interval: String = "60"
     @State private var selectedClients: Set<String> = []
+    @State private var allServers: Bool = false
 
     @State private var isSaving = false
     @State private var errorMessage: String?
 
-    init(nodes: [NodeData], existingTask: PingTask? = nil, onSave: @escaping (String, String, String, [String], Int) async throws -> Void) {
+    init(nodes: [NodeData], existingTask: PingTask? = nil, onSave: @escaping (PingTaskDraft) async throws -> Void) {
         self.nodes = nodes
         self.existingTask = existingTask
         self.onSave = onSave
@@ -293,26 +313,34 @@ private struct PingTaskFormView: View {
                         .keyboardType(.numberPad)
                 }
 
-                Section("Servers") {
-                    if nodes.isEmpty {
-                        Text("No servers available")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(nodes) { node in
-                            Button {
-                                if selectedClients.contains(node.uuid) {
-                                    selectedClients.remove(node.uuid)
-                                } else {
-                                    selectedClients.insert(node.uuid)
-                                }
-                            } label: {
-                                HStack {
-                                    Text(node.name.isEmpty ? node.uuid : node.name)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
+                Section {
+                    Toggle("All Servers", isOn: $allServers.animation())
+                } footer: {
+                    Text("Run on every server, including ones added later.")
+                }
+
+                if !allServers {
+                    Section("Servers") {
+                        if nodes.isEmpty {
+                            Text("No servers available")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(nodes) { node in
+                                Button {
                                     if selectedClients.contains(node.uuid) {
-                                        Image(systemName: "checkmark")
-                                            .foregroundStyle(.accent)
+                                        selectedClients.remove(node.uuid)
+                                    } else {
+                                        selectedClients.insert(node.uuid)
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(node.name.isEmpty ? node.uuid : node.name)
+                                            .foregroundStyle(.primary)
+                                        Spacer()
+                                        if selectedClients.contains(node.uuid) {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(.accent)
+                                        }
                                     }
                                 }
                             }
@@ -372,7 +400,7 @@ private struct PingTaskFormView: View {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
         !target.trimmingCharacters(in: .whitespaces).isEmpty &&
         (Int(interval) ?? 0) > 0 &&
-        !selectedClients.isEmpty
+        (allServers || !selectedClients.isEmpty)
     }
 
     private func populateFromExisting() {
@@ -384,6 +412,7 @@ private struct PingTaskFormView: View {
         target = task.target ?? ""
         interval = task.interval.map { String($0) } ?? "60"
         selectedClients = Set(task.clients ?? [])
+        allServers = task.defaultOn ?? false
     }
 
     private func save() {
@@ -393,13 +422,14 @@ private struct PingTaskFormView: View {
         Task {
             do {
                 let intervalValue = Int(interval) ?? 60
-                try await onSave(
-                    name.trimmingCharacters(in: .whitespaces),
-                    pingType.rawValue,
-                    target.trimmingCharacters(in: .whitespaces),
-                    Array(selectedClients),
-                    intervalValue
-                )
+                try await onSave(PingTaskDraft(
+                    name: name.trimmingCharacters(in: .whitespaces),
+                    type: pingType.rawValue,
+                    target: target.trimmingCharacters(in: .whitespaces),
+                    clients: Array(selectedClients),
+                    interval: intervalValue,
+                    defaultOn: allServers
+                ))
                 dismiss()
             } catch {
                 errorMessage = error.localizedDescription

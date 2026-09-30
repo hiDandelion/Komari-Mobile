@@ -33,18 +33,9 @@ struct UsageBar: View {
                     .fontWeight(.medium)
                     .contentTransition(.numericText(value: clampedValue))
             }
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color(UIColor.systemGray5))
-                        .frame(height: 8)
-                    Capsule()
-                        .fill(barColor)
-                        .frame(width: proxy.size.width * clampedValue / 100, height: 8)
-                        .animation(.smooth(duration: 0.5), value: clampedValue)
-                }
-            }
-            .frame(height: 8)
+            CapsuleProgressBar(value: clampedValue, fill: barColor)
+                .frame(height: 8)
+                .animation(.smooth(duration: 0.5), value: clampedValue)
         }
     }
 }

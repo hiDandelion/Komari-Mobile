@@ -56,4 +56,17 @@ class RecordHandler {
         let result: PingRecordsData = try await RPC2Handler.call(method: "common:getRecords", params: params)
         return result
     }
+
+    /// Fetch per-probe ping statistics for a node's tasks via RPC2 (Komari ≥ 1.5)
+    static func getPingMetricStats(uuid: String, hours: Int) async throws -> [PingMetricStat] {
+        struct Params: Codable {
+            let uuid: String
+            let hours: Double
+        }
+        let result: PingMetricStatsData = try await RPC2Handler.call(
+            method: "public:getPingMetricStats",
+            params: Params(uuid: uuid, hours: Double(hours))
+        )
+        return result.stats ?? []
+    }
 }

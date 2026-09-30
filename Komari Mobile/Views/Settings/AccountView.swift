@@ -11,6 +11,11 @@ struct AccountView: View {
     @State private var account: MeResponseData?
     @State private var isLoading = true
     @State private var errorMessage: String?
+    /// API-key access is not tied to a user account
+    @State private var isAPIKeySession = false
+    /// Code for sensitive operations (password change, disabling 2FA)
+    @State private var twoFactorCode = ""
+    @State private var isShowPasswordTFAPrompt = false
 
     // Username
     @State private var username = ""
@@ -48,6 +53,12 @@ struct AccountView: View {
                         Task { await loadAccount() }
                     }
                 }
+            } else if isAPIKeySession {
+                ContentUnavailableView {
+                    Label("API Key", systemImage: "key")
+                } description: {
+                    Text("Account settings are only available when signed in with a username and password.")
+                }
             } else {
                 accountForm
             }
@@ -72,12 +83,26 @@ struct AccountView: View {
             }
         }
         .alert("Disable 2FA", isPresented: $isShowDisable2FAAlert) {
+            TextField("6-digit code", text: $twoFactorCode)
+                .keyboardType(.numberPad)
             Button("Disable", role: .destructive) {
-                Task { await disable2FA() }
+                let code = twoFactorCode
+                Task { await disable2FA(code: code) }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Are you sure you want to disable two-factor authentication?")
+            Text("Enter your current two-factor authentication code to disable it.")
+        }
+        .alert("Two-Factor Authentication", isPresented: $isShowPasswordTFAPrompt) {
+            TextField("6-digit code", text: $twoFactorCode)
+                .keyboardType(.numberPad)
+            Button("Change Password") {
+                let code = twoFactorCode
+                Task { await savePassword(code: code) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Enter your two-factor authentication code to change the password.")
         }
         .alert("Unbind SSO", isPresented: $isShowUnbindAlert) {
             Button("Unbind", role: .destructive) {
@@ -143,7 +168,12 @@ struct AccountView: View {
             }
 
             Button {
-                Task { await savePassword() }
+                if account?.tfaEnabled == true {
+                    twoFactorCode = ""
+                    isShowPasswordTFAPrompt = true
+                } else {
+                    Task { await savePassword(code: nil) }
+                }
             } label: {
                 if isSavingPassword {
                     ProgressView()
@@ -195,6 +225,7 @@ struct AccountView: View {
 
             if account?.tfaEnabled == true {
                 Button("Disable 2FA", role: .destructive) {
+                    twoFactorCode = ""
                     isShowDisable2FAAlert = true
                 }
                 .disabled(isDisabling2FA)
@@ -233,6 +264,7 @@ struct AccountView: View {
         do {
             let me = try await AuthHandler.getMe()
             withAnimation {
+                isAPIKeySession = (me.uuid ?? "").isEmpty
                 account = me
                 username = me.username ?? ""
                 isLoading = false
@@ -266,13 +298,13 @@ struct AccountView: View {
         isSavingUsername = false
     }
 
-    private func savePassword() async {
+    private func savePassword(code: String?) async {
         guard let uuid = account?.uuid else { return }
         isSavingPassword = true
         passwordMessage = nil
 
         do {
-            try await AdminHandler.updatePassword(uuid: uuid, password: newPassword)
+            try await AdminHandler.updatePassword(uuid: uuid, password: newPassword, twoFactorCode: code)
             passwordSuccess = true
             passwordMessage = "Password changed. All sessions have been revoked."
             newPassword = ""
@@ -284,10 +316,10 @@ struct AccountView: View {
         isSavingPassword = false
     }
 
-    private func disable2FA() async {
+    private func disable2FA(code: String) async {
         isDisabling2FA = true
         do {
-            try await AdminHandler.disable2FA()
+            try await AdminHandler.disable2FA(twoFactorCode: code)
             await loadAccount()
         } catch {
             errorMessage = error.localizedDescription

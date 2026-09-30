@@ -77,17 +77,9 @@ struct ServerCard: View {
                     .contentTransition(.numericText())
             }
 
-            Capsule()
-                .fill(Color(UIColor.systemGray5))
+            CapsuleProgressBar(value: percentage, fill: barColor.gradient)
                 .frame(height: 5)
-                .overlay(alignment: .leading) {
-                    GeometryReader { proxy in
-                        Capsule()
-                            .fill(barColor.gradient)
-                            .frame(width: proxy.size.width * min(max(percentage, 0), 100) / 100)
-                            .animation(.smooth(duration: 0.5), value: percentage)
-                    }
-                }
+                .animation(.smooth(duration: 0.5), value: percentage)
         }
         .padding(.horizontal, 14)
         .padding(.bottom, 12)

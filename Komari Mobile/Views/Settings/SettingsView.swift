@@ -21,14 +21,24 @@ struct SettingsView: View {
                 }
 
                 Section("Notifications") {
+                    if state.capabilities?.hasNotificationChannels == true {
+                        NavigationLink(value: "notification-channel") {
+                            TextWithColorfulIcon(titleKey: "Notification Channel", systemName: "paperplane.fill", color: .green)
+                        }
+                    }
                     NavigationLink(value: "offline-notifications") {
                         TextWithColorfulIcon(titleKey: "Offline Notifications", systemName: "wifi.slash", color: .blue)
                     }
-                    NavigationLink(value: "load-alerts") {
-                        TextWithColorfulIcon(titleKey: "Load Alerts", systemName: "exclamationmark.triangle", color: .orange)
+                    // Removed from Komari 1.5 (moved to plugins); kept for older dashboards.
+                    if state.capabilities?.hasLoadAlerts == true {
+                        NavigationLink(value: "load-alerts") {
+                            TextWithColorfulIcon(titleKey: "Load Alerts", systemName: "exclamationmark.triangle", color: .orange)
+                        }
                     }
-                    NavigationLink(value: "traffic-reports") {
-                        TextWithColorfulIcon(titleKey: "Traffic Reports", systemName: "calendar.badge.clock", color: .purple)
+                    if state.capabilities?.hasTrafficReports == true {
+                        NavigationLink(value: "traffic-reports") {
+                            TextWithColorfulIcon(titleKey: "Traffic Reports", systemName: "calendar.badge.clock", color: .purple)
+                        }
                     }
                     NavigationLink(value: "general-notifications") {
                         TextWithColorfulIcon(titleKey: "General Notifications", systemName: "bell", color: .red)
@@ -75,6 +85,11 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .task {
+                if state.capabilities == nil {
+                    await state.loadCapabilities()
+                }
+            }
+            .task {
                 guard dashboardVersion == nil,
                       let versionData = try? await PublicHandler.getVersion() else { return }
                 var parts: [String] = []
@@ -96,6 +111,8 @@ struct SettingsView: View {
                     PingTasksView()
                 case "load-alerts":
                     LoadAlertsView()
+                case "notification-channel":
+                    NotificationChannelsView()
                 case "offline-notifications":
                     OfflineNotificationsView()
                 case "traffic-reports":

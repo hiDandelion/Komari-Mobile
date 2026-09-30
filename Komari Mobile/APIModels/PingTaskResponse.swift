@@ -14,6 +14,14 @@ struct PingTask: Codable, Identifiable {
     let target: String?
     let interval: Int?
     let clients: [String]?
+    let weight: Int?
+    /// Runs on every node, including ones added later (`clients` is then ignored)
+    let defaultOn: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, type, target, interval, clients, weight
+        case defaultOn = "default_on"
+    }
 
     var displayName: String {
         name ?? "(Unnamed)"

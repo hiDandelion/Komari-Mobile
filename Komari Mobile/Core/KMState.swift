@@ -9,6 +9,21 @@ import Foundation
 import SwiftUI
 import Observation
 
+/// Features that depend on the dashboard version, detected from its RPC method list.
+struct ServerCapabilities: Equatable {
+    let methods: Set<String>
+
+    /// Load alerts were removed from Komari 1.5 (now provided by plugins)
+    var hasLoadAlerts: Bool { methods.contains("admin:getAllLoadNotifications") }
+    /// Traffic reports were removed from Komari 1.5 (now provided by plugins)
+    var hasTrafficReports: Bool { methods.contains("admin:listTrafficReportNotifications") }
+    /// Pluggable notification channels (Komari 1.5+)
+    var hasNotificationChannels: Bool { methods.contains("admin:listNotificationChannels") }
+    var canSwitchAgentVersion: Bool { methods.contains("admin:switchAgentVersion") }
+    /// Per-probe ping statistics from the metric store (Komari 1.5+)
+    var hasPingMetricStats: Bool { methods.contains("public:getPingMetricStats") }
+}
+
 enum MainTab: String, CaseIterable {
     case servers = "servers"
     case settings = "settings"
@@ -40,6 +55,8 @@ class KMState {
     var liveStatus: [String: NodeLiveStatus] = .init()
     var onlineUUIDs: Set<String> = .init()
     var publicInfo: PublicInfo?
+    /// Unknown until discovered; version-dependent features stay hidden meanwhile
+    var capabilities: ServerCapabilities?
     private var timer: Timer?
 
     var groupNames: [String] {
@@ -58,10 +75,12 @@ class KMState {
 
         Task {
             do {
-                // Attempt login if credentials are available
+                // Log in with saved credentials unless the stored session already belongs to
+                // that user; every login creates another server-side session.
                 let username = KMCore.getKomariDashboardUsername()
                 let password = KMCore.getKomariDashboardPassword()
-                if !username.isEmpty && !password.isEmpty {
+                if !username.isEmpty && !password.isEmpty,
+                   (try? await AuthHandler.getMe())?.username != username {
                     try await AuthHandler.login(username: username, password: password)
                 }
 
@@ -69,6 +88,7 @@ class KMState {
                 try await refreshLiveStatus()
                 dashboardLoadingState = .loaded
                 await loadPublicInfo()
+                await loadCapabilities()
             } catch {
                 withAnimation {
                     dashboardLoadingState = .error(error.localizedDescription)
@@ -134,10 +154,19 @@ class KMState {
         try? await loadNodes()
         try? await refreshLiveStatus()
         await loadPublicInfo()
+        await loadCapabilities()
     }
 
     /// Public site info is optional: older dashboards may not expose it, so failures are non-fatal.
     func loadPublicInfo() async {
         publicInfo = try? await PublicHandler.getPublicInfo()
+    }
+
+    func loadCapabilities() async {
+        guard let methods = try? await RPC2Handler.availableMethods() else { return }
+        let discovered = ServerCapabilities(methods: methods)
+        if capabilities != discovered {
+            capabilities = discovered
+        }
     }
 }

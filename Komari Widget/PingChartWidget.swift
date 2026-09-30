@@ -75,6 +75,7 @@ struct PingChartProvider: AppIntentTimelineProvider {
                 guard let timeStr = record.time,
                       let date = WidgetDateParser.parseDate(timeStr),
                       let value = record.value,
+                      value >= 0, // -1 marks a lost probe
                       let taskId = record.taskId,
                       let taskName = taskMap[taskId] else { return nil }
                 return PingWidgetPoint(date: date, value: value, taskId: taskId, taskName: taskName)

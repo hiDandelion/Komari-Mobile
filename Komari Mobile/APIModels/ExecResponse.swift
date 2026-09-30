@@ -10,10 +10,13 @@ import Foundation
 struct ExecTaskData: Codable {
     let taskId: String?
     let clients: [String]?
+    /// Offline targets; the command is delivered once they reconnect
+    let queuedClients: [String]?
 
     enum CodingKeys: String, CodingKey {
         case taskId = "task_id"
         case clients
+        case queuedClients = "queued_clients"
     }
 }
 

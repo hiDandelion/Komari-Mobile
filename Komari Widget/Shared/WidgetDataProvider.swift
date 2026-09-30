@@ -20,6 +20,12 @@ enum WidgetDataProvider {
             throw KomariError.authenticationFailed
         }
 
+        // Reuse the stored session; every login creates another server-side session.
+        if let me: MeResponseData = try? await WidgetRPC2Handler.call(method: "common:getMe"),
+           me.loggedIn == true, me.username == username {
+            return
+        }
+
         try await WidgetAuthHandler.login(username: username, password: password)
     }
 
@@ -65,6 +71,12 @@ enum WidgetDataProvider {
             throw KomariError.invalidResponse(baseResponse.message ?? "Failed to fetch records")
         }
         return recordsData.records ?? []
+    }
+
+    /// Fetch all ping tasks in dashboard order via RPC2
+    static func getPingTasks() async throws -> [PublicPingTask] {
+        let result: [PublicPingTask] = try await WidgetRPC2Handler.call(method: "public:getPublicPingTasks")
+        return result.sorted { ($0.weight ?? 0, $0.id) < ($1.weight ?? 0, $1.id) }
     }
 
     /// Fetch ping records for a specific node via RPC2

@@ -14,6 +14,7 @@ enum KomariError: LocalizedError {
     case decodingError
     case invalidResponse(String)
     case rpcError(String)
+    case unsupportedByServer
 
     var errorDescription: String? {
         switch self {
@@ -29,6 +30,8 @@ enum KomariError: LocalizedError {
             return message
         case .rpcError(let message):
             return "RPC Error: \(message)"
+        case .unsupportedByServer:
+            return String(localized: "This feature is not supported by your Komari dashboard version.")
         }
     }
 }
@@ -65,7 +68,33 @@ class RequestHandler {
             throw KomariError.networkError(URLError(.badServerResponse))
         }
 
+        // Unknown API paths fall through to the dashboard's web frontend, which answers with
+        // index.html. That happens for endpoints removed in newer Komari releases. The final URL
+        // is checked so redirects out of the API (e.g. logout → "/") are not mistaken for it.
+        if (httpResponse.url ?? url).path.contains("/api/"),
+           httpResponse.value(forHTTPHeaderField: "Content-Type")?.lowercased().hasPrefix("text/html") == true {
+            throw KomariError.unsupportedByServer
+        }
+
         return (data, httpResponse)
+    }
+
+    /// Header carrying a 2FA code for sensitive operations (remote exec, disabling 2FA, …).
+    static func twoFactorHeaders(_ code: String?) -> [String: String] {
+        guard let code, !code.isEmpty else { return [:] }
+        return ["X-2FA-Code": code]
+    }
+
+    /// Error message from a `{status, message}` body, falling back to a generic description.
+    static func errorMessage(from data: Data, fallback: String) -> String {
+        struct ErrorBody: Decodable {
+            let message: String?
+        }
+        if let body = try? JSONDecoder().decode(ErrorBody.self, from: data),
+           let message = body.message, !message.isEmpty {
+            return message
+        }
+        return fallback
     }
 
     static func handleDecodingError(error: DecodingError) {

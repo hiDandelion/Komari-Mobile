@@ -41,6 +41,9 @@ struct ServerDetailStatusView: View {
                     billingSection
                 }
                 processorSection
+                if let devices = status?.gpuDetailedInfo, !devices.isEmpty {
+                    gpuDevicesSection(devices)
+                }
                 resourcesSection
                 networkSection
                 addressSection
@@ -246,6 +249,43 @@ struct ServerDetailStatusView: View {
         }
     }
 
+    // MARK: - GPU Devices
+
+    private func gpuDevicesSection(_ devices: [GPUDeviceStatus]) -> some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionHeader("GPU Devices", systemImage: "square.stack.3d.up")
+                ForEach(Array(devices.enumerated()), id: \.offset) { index, device in
+                    if index > 0 {
+                        Divider()
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(device.name?.isEmpty == false ? device.name! : "GPU \(index)")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .lineLimit(1)
+                            Spacer()
+                            if let temperature = device.temperature, temperature > 0 {
+                                Text("\(temperature)°C")
+                                    .font(.subheadline)
+                                    .foregroundStyle(temperatureColor(Double(temperature)))
+                            }
+                        }
+                        UsageBar(label: "Usage", value: device.utilization ?? 0)
+                        if let total = device.memoryTotal, total > 0 {
+                            UsageBar(
+                                label: String(localized: "VRAM \(formatBytes(device.memoryUsed ?? 0)) / \(formatBytes(total))"),
+                                value: Double(device.memoryUsed ?? 0) / Double(total) * 100
+                            )
+                        }
+                    }
+                }
+            }
+            .padding(14)
+        }
+    }
+
     // MARK: - Resources (Memory, Swap, Disk)
 
     private var resourcesSection: some View {
@@ -317,7 +357,7 @@ struct ServerDetailStatusView: View {
 
                 Divider()
 
-                infoRow("TCP Connections", value: "\(status?.connectionCount ?? 0)")
+                infoRow("TCP Connections", value: "\(status?.tcpConnectionCount ?? 0)")
                 infoRow("UDP Connections", value: "\(status?.connectionCountUDP ?? 0)")
             }
             .padding(14)

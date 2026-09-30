@@ -11,10 +11,13 @@ import Foundation
 ///
 /// Wire protocol (mirrors komari-web `pages/terminal/index.tsx`):
 /// - Endpoint: `ws(s)://<host>/api/admin/client/<uuid>/terminal[?2fa_code=<code>]`
+/// - Right after the upgrade the server sends `{"request_id":"<id>"}` as a text frame. The id
+///   lets a dropped websocket reattach via `?request_id=<id>` (no 2FA) while the server keeps
+///   the session around (5 minutes).
 /// - Keystrokes are sent as raw UTF-8 binary frames.
 /// - Terminal output arrives as binary frames; pre-connection status notices arrive as text frames.
-/// - Resize and heartbeat are JSON text frames (the server forwards text frames starting with `{`
-///   to the agent as control messages).
+/// - Resize, heartbeat and close are JSON text frames (the server forwards text frames starting
+///   with `{` to the agent as control messages; `close` also tears down the server-side session).
 class TerminalSession {
     enum State {
         case connecting
@@ -33,10 +36,19 @@ class TerminalSession {
     /// Close reason or error description available once the session is disconnected.
     private(set) var closeMessage: String?
 
+    /// Server-side session id, used to reattach after the websocket drops.
+    private(set) var requestID: String?
+
+    /// Whether a dropped connection can be resumed without starting a new session.
+    var canReattach: Bool { requestID != nil }
+
+    private var uuid: String?
     private var webSocketTask: URLSessionWebSocketTask?
     private var receiveTask: Task<Void, Never>?
     private var heartbeatTask: Task<Void, Never>?
     private var hasReceivedOutput = false
+    /// Whether the current connection has been acknowledged with a `request_id` frame.
+    private var hasReceivedRequestID = false
     private var currentCols = 0
     private var currentRows = 0
 
@@ -53,14 +65,75 @@ class TerminalSession {
         return formatter
     }()
 
+    /// Opens a new terminal session. The server verifies 2FA for new sessions only.
     func connect(uuid: String, tfaCode: String? = nil) {
-        var endpoint = "/api/admin/client/\(uuid)/terminal"
+        self.uuid = uuid
+        requestID = nil
+        var queryItems: [URLQueryItem] = []
         if let tfaCode, !tfaCode.isEmpty {
-            let encodedCode = tfaCode.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? tfaCode
-            endpoint += "?2fa_code=\(encodedCode)"
+            queryItems.append(URLQueryItem(name: "2fa_code", value: tfaCode))
         }
+        open(queryItems: queryItems)
+    }
 
-        guard let url = KMCore.getWebSocketURL(endpoint: endpoint) else {
+    /// Reattaches to the previous server-side session after the websocket dropped.
+    func reattach() {
+        guard state == .disconnected, let requestID else { return }
+        open(queryItems: [URLQueryItem(name: "request_id", value: requestID)])
+    }
+
+    /// Drops the websocket but keeps the server-side session resumable via `reattach()`.
+    func disconnect() {
+        guard state != .disconnected else { return }
+        state = .disconnected
+        teardown()
+        webSocketTask?.cancel(with: .normalClosure, reason: nil)
+        webSocketTask = nil
+    }
+
+    /// Ends the terminal for good: asks the server to close the session and the agent's shell.
+    func close() {
+        let resumable = canReattach
+        requestID = nil
+        guard state != .disconnected, let task = webSocketTask else { return }
+        state = .disconnected
+        teardown()
+        webSocketTask = nil
+        guard resumable else {
+            task.cancel(with: .normalClosure, reason: nil)
+            return
+        }
+        task.send(.string("{\"type\":\"close\"}")) { _ in
+            task.cancel(with: .normalClosure, reason: nil)
+        }
+    }
+
+    /// Terminal keystrokes, sent as raw binary frames. Empty frames would crash the server's
+    /// first-byte check, so they are dropped.
+    func send(data: Data) {
+        guard !data.isEmpty, state != .disconnected else { return }
+        webSocketTask?.send(.data(data)) { _ in }
+    }
+
+    func updateSize(cols: Int, rows: Int) {
+        currentCols = cols
+        currentRows = rows
+        sendResize()
+    }
+
+    private func open(queryItems: [URLQueryItem]) {
+        guard let uuid,
+              let baseURL = KMCore.getWebSocketURL(endpoint: "/api/admin/client/\(uuid)/terminal"),
+              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+            closeMessage = String(localized: "Dashboard is not properly configured.")
+            state = .disconnected
+            onStateChange?(.disconnected)
+            return
+        }
+        if !queryItems.isEmpty {
+            components.queryItems = queryItems
+        }
+        guard let url = components.url else {
             closeMessage = String(localized: "Dashboard is not properly configured.")
             state = .disconnected
             onStateChange?(.disconnected)
@@ -84,6 +157,10 @@ class TerminalSession {
             request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
         }
 
+        closeMessage = nil
+        hasReceivedOutput = false
+        hasReceivedRequestID = false
+
         let task = Self.socketSession.webSocketTask(with: request)
         webSocketTask = task
         state = .connecting
@@ -95,28 +172,11 @@ class TerminalSession {
         sendResize()
     }
 
-    func disconnect() {
-        guard state != .disconnected else { return }
-        state = .disconnected
+    private func teardown() {
         receiveTask?.cancel()
         receiveTask = nil
         heartbeatTask?.cancel()
         heartbeatTask = nil
-        webSocketTask?.cancel(with: .normalClosure, reason: nil)
-        webSocketTask = nil
-    }
-
-    /// Terminal keystrokes, sent as raw binary frames. Empty frames would crash the server's
-    /// first-byte check, so they are dropped.
-    func send(data: Data) {
-        guard !data.isEmpty, state != .disconnected else { return }
-        webSocketTask?.send(.data(data)) { _ in }
-    }
-
-    func updateSize(cols: Int, rows: Int) {
-        currentCols = cols
-        currentRows = rows
-        sendResize()
     }
 
     private func sendResize() {
@@ -161,10 +221,26 @@ class TerminalSession {
             }
             onOutput?(data)
         case .string(let text):
+            if let id = Self.parseRequestID(text) {
+                requestID = id
+                hasReceivedRequestID = true
+                return
+            }
             onText?(text)
         @unknown default:
             break
         }
+    }
+
+    private static func parseRequestID(_ text: String) -> String? {
+        guard text.hasPrefix("{"),
+              let data = text.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let id = object["request_id"] as? String,
+              !id.isEmpty else {
+            return nil
+        }
+        return id
     }
 
     private func handleClose(error: Error?) {
@@ -172,6 +248,10 @@ class TerminalSession {
         state = .disconnected
         heartbeatTask?.cancel()
         heartbeatTask = nil
+        // A connection the server never acknowledged (e.g. an expired session) cannot be resumed.
+        if !hasReceivedRequestID {
+            requestID = nil
+        }
         if let reason = webSocketTask?.closeReason, let text = String(data: reason, encoding: .utf8), !text.isEmpty {
             closeMessage = text
         } else if let error {

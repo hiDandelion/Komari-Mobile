@@ -254,3 +254,11 @@ struct PingRecordsData: Codable {
     let records: [PingRecord]?
     let tasks: [PingTaskInfo]?
 }
+
+// MARK: - Public Ping Task
+
+struct PublicPingTask: Codable {
+    let id: Int
+    let name: String
+    let weight: Int?
+}

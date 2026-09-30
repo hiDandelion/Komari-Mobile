@@ -109,6 +109,12 @@
             "state" : "new",
             "value" : "%1$.1f%% · %2$@ %3$@"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$.1f%% · %2$@ %3$@"
+          }
         }
       }
     },
@@ -542,6 +548,16 @@
         }
       }
     },
+    "%lld°C" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld°C"
+          }
+        }
+      }
+    },
     "%lldd left" : {
       "localizations" : {
         "zh-Hans" : {
@@ -582,6 +598,16 @@
         }
       }
     },
+    "1.2.3 or 1.2.*" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1.2.3 或 1.2.*"
+          }
+        }
+      }
+    },
     "6-digit code" : {
       "localizations" : {
         "zh-Hans" : {
@@ -608,6 +634,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "账户"
+          }
+        }
+      }
+    },
+    "Account settings are only available when signed in with a username and password." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅在使用用户名和密码登录时才能管理账户设置。"
           }
         }
       }
@@ -712,6 +748,36 @@
         }
       }
     },
+    "Agent" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent"
+          }
+        }
+      }
+    },
+    "Agent Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent 版本"
+          }
+        }
+      }
+    },
+    "All Servers" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有服务器"
+          }
+        }
+      }
+    },
     "All(%lld)" : {
       "localizations" : {
         "zh-Hans" : {
@@ -778,16 +844,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "确定要删除此会话吗？"
-          }
-        }
-      }
-    },
-    "Are you sure you want to disable two-factor authentication?" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "确定禁用双重身份验证吗？"
           }
         }
       }
@@ -912,6 +968,16 @@
         }
       }
     },
+    "Channel" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "渠道"
+          }
+        }
+      }
+    },
     "Close" : {
       "localizations" : {
         "zh-Hans" : {
@@ -928,6 +994,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "命令"
+          }
+        }
+      }
+    },
+    "Configure %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配置 %@"
           }
         }
       }
@@ -1422,6 +1498,16 @@
         }
       }
     },
+    "Enable Notifications" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用通知"
+          }
+        }
+      }
+    },
     "Enable SSL" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1462,6 +1548,26 @@
         }
       }
     },
+    "Enter an exact version or a version line such as 1.2.*." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入确切版本号，或 1.2.* 这样的版本系列。"
+          }
+        }
+      }
+    },
+    "Enter your current two-factor authentication code to disable it." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入当前的双重身份验证码以将其禁用。"
+          }
+        }
+      }
+    },
     "Enter your Komari dashboard details." : {
       "localizations" : {
         "zh-Hans" : {
@@ -1472,12 +1578,32 @@
         }
       }
     },
+    "Enter your two-factor authentication code to change the password." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入双重身份验证码以修改密码。"
+          }
+        }
+      }
+    },
     "Enter your two-factor authentication code to open the terminal." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "输入双重身份验证码以打开终端。"
+          }
+        }
+      }
+    },
+    "Enter your two-factor authentication code to run the command." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入双重身份验证码以执行命令。"
           }
         }
       }
@@ -1630,6 +1756,16 @@
     },
     "GPU" : {
       "shouldTranslate" : false
+    },
+    "GPU Devices" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GPU 设备"
+          }
+        }
+      }
     },
     "Grace Period" : {
       "localizations" : {
@@ -1794,6 +1930,16 @@
         }
       }
     },
+    "Latest Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新版本"
+          }
+        }
+      }
+    },
     "Lead Days" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1933,6 +2079,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "消息"
+          }
+        }
+      }
+    },
+    "Message Template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消息模板"
           }
         }
       }
@@ -2167,12 +2323,32 @@
         }
       }
     },
+    "No Settings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无设置项"
+          }
+        }
+      }
+    },
     "None" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "无"
+          }
+        }
+      }
+    },
+    "Notification Channel" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知渠道"
           }
         }
       }
@@ -2233,6 +2409,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "离线通知"
+          }
+        }
+      }
+    },
+    "Offline, expiration, login and traffic alerts are sent through the selected channel. More channels can be added with dashboard plugins." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "离线、到期、登录和流量提醒会通过所选渠道发送。可通过面板插件添加更多渠道。"
           }
         }
       }
@@ -2356,6 +2542,16 @@
         }
       }
     },
+    "Placeholders: {{emoji}}, {{event}}, {{client}}, {{message}}, {{time}}" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "占位符：{{emoji}}、{{event}}、{{client}}、{{message}}、{{time}}"
+          }
+        }
+      }
+    },
     "Platform" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2456,6 +2652,16 @@
         }
       }
     },
+    "Reconnect" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新连接"
+          }
+        }
+      }
+    },
     "Regions" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2536,6 +2742,16 @@
         }
       }
     },
+    "Restore Default Template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复默认模板"
+          }
+        }
+      }
+    },
     "Results" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2576,6 +2792,16 @@
         }
       }
     },
+    "Run on every server, including ones added later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在所有服务器上运行，包括之后添加的服务器。"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2592,6 +2818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存并应用"
+          }
+        }
+      }
+    },
+    "Save Template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存模板"
           }
         }
       }
@@ -2676,6 +2912,16 @@
         }
       }
     },
+    "Send Test Notification" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送测试通知"
+          }
+        }
+      }
+    },
     "Series" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2712,17 +2958,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "服务器离线"
-          }
-        }
-      }
-    },
-    "Server Unavailable" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "服务器不可用"
           }
         }
       }
@@ -2803,6 +3038,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "排序"
+          }
+        }
+      }
+    },
+    "Specific Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指定版本"
+          }
+        }
+      }
+    },
+    "Specific Version…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指定版本…"
           }
         }
       }
@@ -2913,6 +3168,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "测试连接"
+          }
+        }
+      }
+    },
+    "Test notification sent." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试通知已发送。"
+          }
+        }
+      }
+    },
+    "The agent downloads the selected release and restarts. The server must be online." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent 会下载所选版本并重启。服务器必须在线。"
+          }
+        }
+      }
+    },
+    "This channel has no settings." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此渠道没有可配置的设置项。"
+          }
+        }
+      }
+    },
+    "This feature is not supported by your Komari dashboard version." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前 Komari 面板版本不支持此功能。"
           }
         }
       }
@@ -3168,6 +3463,46 @@
         }
       }
     },
+    "Update" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新"
+          }
+        }
+      }
+    },
+    "Update Agent" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新 Agent"
+          }
+        }
+      }
+    },
+    "Update Agent…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新 Agent…"
+          }
+        }
+      }
+    },
+    "Update requested. The agent will reconnect after restarting." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已发送更新请求。Agent 重启后会重新连接。"
+          }
+        }
+      }
+    },
     "Upload" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3274,6 +3609,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用图表可视化详细历史负载信息和ping延迟。"
+          }
+        }
+      }
+    },
+    "VRAM %@ / %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显存 %@ / %@"
           }
         }
       }

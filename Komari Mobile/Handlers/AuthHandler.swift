@@ -33,7 +33,9 @@ class AuthHandler {
         )
 
         guard response.statusCode == 200 else {
-            throw KomariError.authenticationFailed
+            // e.g. "2FA code is required", "Password login is disabled"
+            let message = RequestHandler.errorMessage(from: data, fallback: "")
+            throw message.isEmpty ? KomariError.authenticationFailed : KomariError.invalidResponse(message)
         }
 
         // Decode the response to check status
@@ -47,20 +49,10 @@ class AuthHandler {
         return true
     }
 
-    /// Get current user info (returns plain object, not wrapped in KomariBaseResponse)
+    /// Get current user info. Uses RPC `common:getMe`, which (unlike REST `/api/me`) also
+    /// recognizes API-key authentication.
     static func getMe() async throws -> MeResponseData {
-        guard let url = KMCore.getAPIURL(endpoint: "/api/me") else {
-            throw KomariError.invalidDashboardConfiguration
-        }
-
-        let (data, response) = try await RequestHandler.request(url: url)
-
-        guard response.statusCode == 200 else {
-            throw KomariError.authenticationFailed
-        }
-
-        let decoder = JSONDecoder()
-        let meData = try decoder.decode(MeResponseData.self, from: data)
+        let meData: MeResponseData = try await RPC2Handler.call(method: "common:getMe")
 
         guard meData.loggedIn == true else {
             throw KomariError.authenticationFailed

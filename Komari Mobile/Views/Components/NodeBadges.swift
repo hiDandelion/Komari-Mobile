@@ -208,18 +208,9 @@ struct TrafficLimitBar: View {
                     .fontWeight(.medium)
                     .contentTransition(.numericText(value: percentage))
             }
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color(UIColor.systemGray5))
-                        .frame(height: 8)
-                    Capsule()
-                        .fill(barColor)
-                        .frame(width: proxy.size.width * min(max(percentage, 0), 100) / 100, height: 8)
-                        .animation(.smooth(duration: 0.5), value: percentage)
-                }
-            }
-            .frame(height: 8)
+            CapsuleProgressBar(value: percentage, fill: barColor)
+                .frame(height: 8)
+                .animation(.smooth(duration: 0.5), value: percentage)
             HStack {
                 Text(NodeBilling.trafficTypeLabel(type))
                 Spacer()

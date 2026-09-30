@@ -53,8 +53,17 @@ struct EditServerView: View {
     @State private var billingCycle: Int = 0
     @State private var currency: String = ""
     @State private var hasExpiration: Bool = false
+    /// Whether the server currently stores an expiration date (so turning it off must clear it)
+    @State private var hadExpiration: Bool = false
     @State private var expiredAt: Date = Date()
     @State private var autoRenewal: Bool = false
+
+    // Agent
+    @State private var isShowAgentVersionOptions = false
+    @State private var isShowCustomAgentVersion = false
+    @State private var customAgentVersion = ""
+    @State private var isSwitchingAgentVersion = false
+    @State private var agentVersionMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -195,12 +204,84 @@ struct EditServerView: View {
                 Toggle("Auto Renewal", isOn: $autoRenewal)
             }
 
+            if state.capabilities?.canSwitchAgentVersion == true {
+                agentSection
+            }
+
             if let errorMessage {
                 Section {
                     Text(errorMessage)
                         .foregroundStyle(.red)
                 }
             }
+        }
+    }
+
+    // MARK: - Agent
+
+    private var agentSection: some View {
+        Section {
+            if let version = node.version, !version.isEmpty {
+                LabeledContent("Agent Version", value: version)
+            }
+
+            Button {
+                isShowAgentVersionOptions = true
+            } label: {
+                if isSwitchingAgentVersion {
+                    ProgressView()
+                } else {
+                    Text("Update Agent…")
+                }
+            }
+            .disabled(isSwitchingAgentVersion || !state.onlineUUIDs.contains(node.uuid))
+            .confirmationDialog("Update Agent", isPresented: $isShowAgentVersionOptions, titleVisibility: .visible) {
+                Button("Latest Version") {
+                    switchAgentVersion("latest")
+                }
+                Button("Specific Version…") {
+                    customAgentVersion = ""
+                    isShowCustomAgentVersion = true
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+            .alert("Specific Version", isPresented: $isShowCustomAgentVersion) {
+                TextField("1.2.3 or 1.2.*", text: $customAgentVersion)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                Button("Update") {
+                    switchAgentVersion(customAgentVersion.trimmingCharacters(in: .whitespaces))
+                }
+                .disabled(customAgentVersion.trimmingCharacters(in: .whitespaces).isEmpty)
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Enter an exact version or a version line such as 1.2.*.")
+            }
+
+            if let agentVersionMessage {
+                Text(agentVersionMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } header: {
+            Text("Agent")
+        } footer: {
+            Text("The agent downloads the selected release and restarts. The server must be online.")
+        }
+    }
+
+    private func switchAgentVersion(_ version: String) {
+        guard !version.isEmpty else { return }
+        isSwitchingAgentVersion = true
+        agentVersionMessage = nil
+        Task {
+            do {
+                try await AdminHandler.switchAgentVersion(uuid: node.uuid, version: version)
+                agentVersionMessage = String(localized: "Update requested. The agent will reconnect after restarting.")
+            } catch {
+                agentVersionMessage = error.localizedDescription
+            }
+            isSwitchingAgentVersion = false
         }
     }
 
@@ -232,8 +313,10 @@ struct EditServerView: View {
                 token = adminNode.token ?? ""
                 remark = adminNode.remark ?? ""
                 autoRenewal = adminNode.autoRenewal ?? false
-                if let expStr = adminNode.expiredAt, let date = parseDate(expStr) {
+                if let expStr = adminNode.expiredAt, let date = parseDate(expStr),
+                   Calendar.current.component(.year, from: date) > 1 {
                     hasExpiration = true
+                    hadExpiration = true
                     expiredAt = date
                 }
             }
@@ -283,6 +366,8 @@ struct EditServerView: View {
                 if hasExpiration {
                     let formatter = ISO8601DateFormatter()
                     changes["expired_at"] = formatter.string(from: expiredAt)
+                } else if hadExpiration {
+                    changes["expired_at"] = NSNull()
                 }
 
                 try await AdminHandler.editClient(uuid: node.uuid, changes: changes)
@@ -328,13 +413,11 @@ struct EditServerView: View {
     }
 
     private func parseDate(_ string: String) -> Date? {
-        let iso = ISO8601DateFormatter()
-        if let date = iso.date(from: string) { return date }
+        // Komari ≥ 1.5 sends UTC timestamps with nanoseconds; older versions send whole seconds.
+        if let date = ServerDetailMonitorView.parseDate(string) { return date }
 
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        if let date = formatter.date(from: string) { return date }
-
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.date(from: string)
     }

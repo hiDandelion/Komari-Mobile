@@ -53,7 +53,6 @@ struct OfflineNotificationsView: View {
                 let entry: [String: Any] = [
                     "client": node.uuid,
                     "enable": enabled,
-                    "cooldown": 3000,
                     "grace_period": gracePeriod
                 ]
                 try await AdminHandler.editOfflineNotifications(entries: [entry])

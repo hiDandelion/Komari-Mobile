@@ -47,7 +47,9 @@ struct ChartRange: Hashable, Identifiable {
     /// Ranges for the load charts: live plus presets up to record_preserve_time
     static func loadRanges(publicInfo: PublicInfo?) -> [ChartRange] {
         var result: [ChartRange] = [.live]
-        if publicInfo?.recordEnabled == false {
+        // Komari ≥ 1.5 reports record_enabled = false as soon as any single metric has zero
+        // retention, so only treat history as disabled when nothing is preserved at all.
+        if publicInfo?.recordEnabled == false, (publicInfo?.recordPreserveTime ?? 0) <= 0 {
             return result
         }
         let maxHours = publicInfo?.recordPreserveTime ?? 720

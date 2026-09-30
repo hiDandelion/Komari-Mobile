@@ -44,6 +44,11 @@ struct PingTaskEntityQuery: EntityQuery {
     }
 
     private func fetchAllPingTasks() async throws -> [PingTaskAppEntity] {
+        if let tasks = try? await WidgetDataProvider.getPingTasks() {
+            return tasks.map { PingTaskAppEntity(id: String($0.id), name: $0.name) }
+        }
+
+        // Fallback: collect tasks from the ping records of the first few servers
         let nodes = try await WidgetDataProvider.getNodes()
         var seenIds = Set<String>()
         var entities: [PingTaskAppEntity] = []

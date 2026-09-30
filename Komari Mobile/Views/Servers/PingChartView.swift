@@ -125,7 +125,8 @@ struct PingChartView: View {
                             Text(task.name)
                                 .font(.system(size: 14, weight: .semibold))
                             HStack(spacing: 8) {
-                                if let latest = task.latest {
+                                // -1 means the latest probe was lost
+                                if let latest = task.latest, latest >= 0 {
                                     Text("\(Int(latest)) ms")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
@@ -253,7 +254,11 @@ struct PingChartView: View {
                     .chartXAxis {
                         AxisMarks { _ in
                             AxisGridLine()
-                            AxisValueLabel(format: .dateTime.hour().minute())
+                            if selectedRange.hours > 24 {
+                                AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
+                            } else {
+                                AxisValueLabel(format: .dateTime.hour().minute())
+                            }
                         }
                     }
                     .chartForegroundStyleScale(range: tasks.enumerated().compactMap { index, task in
@@ -317,12 +322,26 @@ struct PingChartView: View {
 
     private func fetchPingRecords() {
         loadingState = .loading
+        let uuid = node.uuid
+        let hours = selectedRange.hours
+        let useMetricStats = state.capabilities?.hasPingMetricStats == true
         Task {
             do {
-                let result = try await RecordHandler.getPingRecords(uuid: node.uuid, hours: selectedRange.hours)
+                async let recordsTask = RecordHandler.getPingRecords(uuid: uuid, hours: hours)
+                async let statsTask: [PingMetricStat]? = useMetricStats
+                    ? try? RecordHandler.getPingMetricStats(uuid: uuid, hours: hours)
+                    : nil
+                let result = try await recordsTask
+                var fetchedTasks = result.tasks ?? []
+                if let stats = await statsTask {
+                    let statsByTask = Dictionary(stats.map { ($0.taskId, $0) }, uniquingKeysWith: { first, _ in first })
+                    fetchedTasks = fetchedTasks.map { task in
+                        statsByTask[String(task.id)].map(task.merging) ?? task
+                    }
+                }
                 withAnimation {
                     pingRecords = result.records ?? []
-                    tasks = result.tasks ?? []
+                    tasks = fetchedTasks
                     loadingState = .loaded
                 }
             } catch {
