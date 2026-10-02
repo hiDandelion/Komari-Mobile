@@ -2,7 +2,7 @@
 //  ServerListView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import SwiftUI
@@ -177,7 +177,12 @@ struct ServerListView: View {
 
     private var dashboard: some View {
         Group {
-            if isReordering {
+            if let challenge = state.twoFactorChallenge {
+                TwoFactorSignInView(message: challenge.rejectionMessage) { code in
+                    state.loadDashboard(tfaCode: code)
+                }
+                .navigationTitle(navigationTitle)
+            } else if isReordering {
                 reorderList
                     .navigationTitle("Reorder Servers")
                     .toolbar {

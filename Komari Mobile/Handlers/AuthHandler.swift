@@ -2,7 +2,7 @@
 //  AuthHandler.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import Foundation
@@ -19,7 +19,7 @@ class AuthHandler {
             "username": username,
             "password": password
         ]
-        if let tfaCode, !tfaCode.isEmpty {
+        if let tfaCode = RequestHandler.normalizedTwoFactorCode(tfaCode) {
             bodyDict["2fa_code"] = tfaCode
         }
 
@@ -33,9 +33,19 @@ class AuthHandler {
         )
 
         guard response.statusCode == 200 else {
-            // e.g. "2FA code is required", "Password login is disabled"
+            // e.g. "2FA code is required", "Password login is disabled". The server reports 2FA
+            // failures only through these messages.
             let message = RequestHandler.errorMessage(from: data, fallback: "")
-            throw message.isEmpty ? KomariError.authenticationFailed : KomariError.invalidResponse(message)
+            switch message {
+            case "2FA code is required":
+                throw KomariError.twoFactorRequired
+            case "Invalid 2FA code":
+                throw KomariError.invalidTwoFactorCode
+            case "":
+                throw KomariError.authenticationFailed
+            default:
+                throw KomariError.invalidResponse(message)
+            }
         }
 
         // Decode the response to check status

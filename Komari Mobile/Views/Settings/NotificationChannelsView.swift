@@ -2,7 +2,7 @@
 //  NotificationChannelsView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 9/29/26.
+//  Created by Takuma Kirishima on 9/29/26.
 //
 
 import SwiftUI

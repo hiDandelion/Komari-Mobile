@@ -2,7 +2,7 @@
 //  CapsuleProgressBar.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 9/30/26.
+//  Created by Takuma Kirishima on 9/30/26.
 //
 
 import SwiftUI

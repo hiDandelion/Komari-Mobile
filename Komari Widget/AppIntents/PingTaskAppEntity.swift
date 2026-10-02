@@ -2,7 +2,7 @@
 //  PingTaskAppEntity.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 3/23/26.
+//  Created by Takuma Kirishima on 3/23/26.
 //
 
 import AppIntents

@@ -2,7 +2,7 @@
 //  WidgetModels.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 2/19/26.
+//  Created by Takuma Kirishima on 2/19/26.
 //
 
 import Foundation

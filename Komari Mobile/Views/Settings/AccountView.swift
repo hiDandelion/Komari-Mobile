@@ -2,12 +2,13 @@
 //  AccountView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 3/7/26.
+//  Created by Takuma Kirishima on 3/7/26.
 //
 
 import SwiftUI
 
 struct AccountView: View {
+    @Environment(KMState.self) private var state
     @State private var account: MeResponseData?
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -34,6 +35,7 @@ struct AccountView: View {
     @State private var isShow2FASetupSheet = false
     @State private var isShowDisable2FAAlert = false
     @State private var isDisabling2FA = false
+    @State private var twoFactorMessage: String?
 
     // OAuth2
     @State private var isShowUnbindAlert = false
@@ -85,6 +87,7 @@ struct AccountView: View {
         .alert("Disable 2FA", isPresented: $isShowDisable2FAAlert) {
             TextField("6-digit code", text: $twoFactorCode)
                 .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
             Button("Disable", role: .destructive) {
                 let code = twoFactorCode
                 Task { await disable2FA(code: code) }
@@ -96,6 +99,7 @@ struct AccountView: View {
         .alert("Two-Factor Authentication", isPresented: $isShowPasswordTFAPrompt) {
             TextField("6-digit code", text: $twoFactorCode)
                 .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
             Button("Change Password") {
                 let code = twoFactorCode
                 Task { await savePassword(code: code) }
@@ -223,6 +227,12 @@ struct AccountView: View {
                 }
             }
 
+            if let twoFactorMessage {
+                Text(twoFactorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+
             if account?.tfaEnabled == true {
                 Button("Disable 2FA", role: .destructive) {
                     twoFactorCode = ""
@@ -284,10 +294,12 @@ struct AccountView: View {
         usernameMessage = nil
 
         do {
-            try await AdminHandler.updateUsername(
-                uuid: uuid,
-                username: username.trimmingCharacters(in: .whitespaces)
-            )
+            let newUsername = username.trimmingCharacters(in: .whitespaces)
+            try await AdminHandler.updateUsername(uuid: uuid, username: newUsername)
+            // Signing in again later uses the saved username
+            if !KMCore.getKomariDashboardUsername().isEmpty {
+                KMCore.setKomariDashboardUsername(newUsername)
+            }
             usernameSuccess = true
             usernameMessage = "Username updated."
             await loadAccount()
@@ -305,6 +317,13 @@ struct AccountView: View {
 
         do {
             try await AdminHandler.updatePassword(uuid: uuid, password: newPassword, twoFactorCode: code)
+            // The server revokes every session, including this one. Sign in again with the new
+            // password, reusing the code while it is still valid; otherwise the server list asks
+            // for a new one.
+            if !KMCore.getKomariDashboardUsername().isEmpty {
+                KMCore.setKomariDashboardPassword(newPassword)
+                state.loadDashboard(tfaCode: code)
+            }
             passwordSuccess = true
             passwordMessage = "Password changed. All sessions have been revoked."
             newPassword = ""
@@ -318,11 +337,12 @@ struct AccountView: View {
 
     private func disable2FA(code: String) async {
         isDisabling2FA = true
+        twoFactorMessage = nil
         do {
             try await AdminHandler.disable2FA(twoFactorCode: code)
             await loadAccount()
         } catch {
-            errorMessage = error.localizedDescription
+            twoFactorMessage = error.localizedDescription
         }
         isDisabling2FA = false
     }
@@ -370,6 +390,10 @@ private struct TwoFactorSetupView: View {
     @State private var isEnabling = false
     @State private var errorMessage: String?
 
+    private var isOTPCodeComplete: Bool {
+        RequestHandler.normalizedTwoFactorCode(otpCode)?.count == 6
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -404,6 +428,7 @@ private struct TwoFactorSetupView: View {
                 Section("Verification") {
                     TextField("OTP", text: $otpCode)
                         .keyboardType(.numberPad)
+                        .textContentType(.oneTimeCode)
                         .font(.title2.monospaced())
                         .multilineTextAlignment(.center)
                         .disabled(isEnabling)
@@ -442,12 +467,12 @@ private struct TwoFactorSetupView: View {
                             } label: {
                                 Label("Enable", systemImage: "checkmark")
                             }
-                            .disabled(otpCode.count != 6)
+                            .disabled(!isOTPCodeComplete)
                         } else {
                             Button("Enable") {
                                 enable()
                             }
-                            .disabled(otpCode.count != 6)
+                            .disabled(!isOTPCodeComplete)
                         }
                     }
                 }

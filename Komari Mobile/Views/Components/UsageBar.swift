@@ -2,7 +2,7 @@
 //  UsageBar.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/18/26.
+//  Created by Takuma Kirishima on 2/18/26.
 //
 
 import SwiftUI
@@ -28,7 +28,7 @@ struct UsageBar: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("\(clampedValue, specifier: "%.1f")%")
+                Text(clampedValue / 100, format: .percent.precision(.fractionLength(1)))
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .contentTransition(.numericText(value: clampedValue))

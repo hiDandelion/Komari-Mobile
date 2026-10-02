@@ -2,7 +2,7 @@
 //  PingChartWidget.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 2/19/26.
+//  Created by Takuma Kirishima on 2/19/26.
 //
 
 import WidgetKit
@@ -35,17 +35,41 @@ struct PingChartEntry: TimelineEntry {
 
 struct PingChartProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> PingChartEntry {
-        PingChartEntry(date: .now, serverName: "Server", serverRegion: "🌍", tasks: [], chartPoints: [], isConfigured: true, errorMessage: nil)
+        sampleEntry
     }
 
     func snapshot(for configuration: SelectPingIntent, in context: Context) async -> PingChartEntry {
-        PingChartEntry(date: .now, serverName: "Server", serverRegion: "🌍", tasks: [], chartPoints: [], isConfigured: true, errorMessage: nil)
+        // The widget gallery needs a preview right away, so it gets sample data instead of a fetch.
+        if context.isPreview { return sampleEntry }
+        return await loadEntry(for: configuration)
     }
 
     func timeline(for configuration: SelectPingIntent, in context: Context) async -> Timeline<PingChartEntry> {
+        let entry = await loadEntry(for: configuration)
+        return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+    }
+
+    /// Stand-in data so the redacted loading placeholder and the gallery show the real layout.
+    /// Covers the same hour as a real fetch, one point every 2 minutes per task.
+    private var sampleEntry: PingChartEntry {
+        let now = Date.now
+        let count = 30
+        let samples: [(id: Int, name: String, base: Double)] = [(1, "Tokyo", 40), (2, "Frankfurt", 160)]
+        var tasks: [PingTaskInfo] = []
+        var points: [PingWidgetPoint] = []
+        for sample in samples {
+            let values = (0..<count).map { i in sample.base * (1 + 0.15 * sin(Double(i + sample.id * 7) / 3)) }
+            tasks.append(PingTaskInfo(id: sample.id, name: sample.name, interval: 60, loss: 0, p99: nil, p50: nil, min: nil, max: nil, avg: nil, latest: values.last, total: nil, type: nil))
+            points += values.enumerated().map { i, value in
+                PingWidgetPoint(date: now.addingTimeInterval(Double(i - count + 1) * 120), value: value, taskId: sample.id, taskName: sample.name)
+            }
+        }
+        return PingChartEntry(date: now, serverName: "Server", serverRegion: "🌍", tasks: tasks, chartPoints: points, isConfigured: true, errorMessage: nil)
+    }
+
+    private func loadEntry(for configuration: SelectPingIntent) async -> PingChartEntry {
         guard WidgetKMCore.isConfigured else {
-            let entry = PingChartEntry(date: .now, serverName: "", serverRegion: "", tasks: [], chartPoints: [], isConfigured: false, errorMessage: nil)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+            return PingChartEntry(date: .now, serverName: "", serverRegion: "", tasks: [], chartPoints: [], isConfigured: false, errorMessage: nil)
         }
 
         do {
@@ -54,8 +78,7 @@ struct PingChartProvider: AppIntentTimelineProvider {
 
             let serverID = configuration.server?.id ?? nodes.values.sorted(by: { $0.weight < $1.weight }).first?.uuid
             guard let id = serverID, let node = nodes[id] else {
-                let entry = PingChartEntry(date: .now, serverName: "", serverRegion: "", tasks: [], chartPoints: [], isConfigured: true, errorMessage: "Server not found")
-                return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+                return PingChartEntry(date: .now, serverName: "", serverRegion: "", tasks: [], chartPoints: [], isConfigured: true, errorMessage: "Server not found")
             }
 
             let pingData = try await WidgetDataProvider.getPingRecords(uuid: id, hours: 1)
@@ -83,11 +106,9 @@ struct PingChartProvider: AppIntentTimelineProvider {
 
             let downsampled = downsampleByTask(points, maxPerTask: 30)
 
-            let entry = PingChartEntry(date: .now, serverName: node.name, serverRegion: node.region, tasks: tasks, chartPoints: downsampled, isConfigured: true, errorMessage: nil)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+            return PingChartEntry(date: .now, serverName: node.name, serverRegion: node.region, tasks: tasks, chartPoints: downsampled, isConfigured: true, errorMessage: nil)
         } catch {
-            let entry = PingChartEntry(date: .now, serverName: "", serverRegion: "", tasks: [], chartPoints: [], isConfigured: true, errorMessage: error.localizedDescription)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+            return PingChartEntry(date: .now, serverName: "", serverRegion: "", tasks: [], chartPoints: [], isConfigured: true, errorMessage: error.localizedDescription)
         }
     }
 
@@ -166,7 +187,7 @@ struct PingChartSmallView: View {
                             Text("Loss")
                                 .font(.system(size: 8))
                                 .foregroundStyle(.secondary)
-                            Text(String(format: "%.1f%%", loss))
+                            Text(loss / 100, format: .percent.precision(.fractionLength(1)))
                                 .font(.caption)
                                 .fontWeight(.medium)
                                 .foregroundStyle(loss > 5 ? .red : .primary)
@@ -257,7 +278,7 @@ struct PingChartMediumView: View {
                                             .foregroundStyle(.secondary)
                                     }
                                     if let loss = task.loss {
-                                        Text(String(format: "%.1f%%", loss))
+                                        Text(loss / 100, format: .percent.precision(.fractionLength(1)))
                                             .font(.system(size: 8))
                                             .foregroundStyle(loss > 5 ? .red : .secondary)
                                     }

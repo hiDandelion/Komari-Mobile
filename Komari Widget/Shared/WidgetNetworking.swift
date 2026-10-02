@@ -2,7 +2,7 @@
 //  WidgetNetworking.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 2/19/26.
+//  Created by Takuma Kirishima on 2/19/26.
 //
 
 import Foundation
@@ -16,6 +16,8 @@ enum KomariError: LocalizedError {
     case decodingError
     case invalidResponse(String)
     case rpcError(String)
+    /// Signing in needs a 2FA code, which only the app can ask for.
+    case signInRequired
 
     var errorDescription: String? {
         switch self {
@@ -31,6 +33,8 @@ enum KomariError: LocalizedError {
             return message
         case .rpcError(let message):
             return "RPC Error: \(message)"
+        case .signInRequired:
+            return "Open Komari Mobile to sign in."
         }
     }
 }
@@ -38,6 +42,14 @@ enum KomariError: LocalizedError {
 // MARK: - Request Handler
 
 enum WidgetRequestHandler {
+    private static let session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.httpCookieStorage = WidgetKMCore.cookieStorage
+        config.httpCookieAcceptPolicy = .always
+        config.httpShouldSetCookies = true
+        return URLSession(configuration: config)
+    }()
+
     static func request(url: URL, method: String = "GET", body: Data? = nil, headers: [String: String]? = nil) async throws -> (Data, HTTPURLResponse) {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method
@@ -54,7 +66,7 @@ enum WidgetRequestHandler {
             }
         }
 
-        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        let (data, response) = try await session.data(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw KomariError.networkError(URLError(.badServerResponse))
@@ -131,6 +143,11 @@ enum WidgetAuthHandler {
         )
 
         guard response.statusCode == 200 else {
+            // Accounts with 2FA can only sign in from the app; the widget then reuses that session.
+            let message = (try? JSONDecoder().decode(KomariBaseResponse<String?>.self, from: data))?.message
+            if message == "2FA code is required" || message == "Invalid 2FA code" {
+                throw KomariError.signInRequired
+            }
             throw KomariError.authenticationFailed
         }
 

@@ -2,7 +2,7 @@
 //  TerminalViewController.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 7/2/26.
+//  Created by Takuma Kirishima on 7/2/26.
 //
 
 import Foundation

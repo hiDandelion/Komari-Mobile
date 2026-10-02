@@ -2,7 +2,7 @@
 //  LogsView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 3/7/26.
+//  Created by Takuma Kirishima on 3/7/26.
 //
 
 import SwiftUI

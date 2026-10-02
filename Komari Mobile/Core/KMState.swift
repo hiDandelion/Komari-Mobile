@@ -2,7 +2,7 @@
 //  KMState.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import Foundation
@@ -22,6 +22,12 @@ struct ServerCapabilities: Equatable {
     var canSwitchAgentVersion: Bool { methods.contains("admin:switchAgentVersion") }
     /// Per-probe ping statistics from the metric store (Komari 1.5+)
     var hasPingMetricStats: Bool { methods.contains("public:getPingMetricStats") }
+}
+
+/// Signing in with the saved credentials is waiting for a 2FA code.
+struct TwoFactorChallenge: Equatable {
+    /// Why the previous code was rejected, if it was
+    let rejectionMessage: String?
 }
 
 enum MainTab: String, CaseIterable {
@@ -51,6 +57,7 @@ class KMState {
     var tab: MainTab = .servers
 
     var dashboardLoadingState: LoadingState = .idle
+    var twoFactorChallenge: TwoFactorChallenge?
     var nodes: [NodeData] = .init()
     var liveStatus: [String: NodeLiveStatus] = .init()
     var onlineUUIDs: Set<String> = .init()
@@ -64,7 +71,9 @@ class KMState {
         return Array(Set(groups)).sorted()
     }
 
-    func loadDashboard() {
+    /// `tfaCode` answers a `twoFactorChallenge` from the previous attempt.
+    func loadDashboard(tfaCode: String? = nil) {
+        twoFactorChallenge = nil
         let link = KMCore.getKomariDashboardLink()
         guard !link.isEmpty else {
             dashboardLoadingState = .error("Dashboard is not properly configured.")
@@ -81,7 +90,7 @@ class KMState {
                 let password = KMCore.getKomariDashboardPassword()
                 if !username.isEmpty && !password.isEmpty,
                    (try? await AuthHandler.getMe())?.username != username {
-                    try await AuthHandler.login(username: username, password: password)
+                    try await AuthHandler.login(username: username, password: password, tfaCode: tfaCode)
                 }
 
                 try await loadNodes()
@@ -91,6 +100,14 @@ class KMState {
                 await loadCapabilities()
             } catch {
                 withAnimation {
+                    switch error as? KomariError {
+                    case .twoFactorRequired:
+                        twoFactorChallenge = TwoFactorChallenge(rejectionMessage: nil)
+                    case .invalidTwoFactorCode:
+                        twoFactorChallenge = TwoFactorChallenge(rejectionMessage: error.localizedDescription)
+                    default:
+                        break
+                    }
                     dashboardLoadingState = .error(error.localizedDescription)
                 }
                 return

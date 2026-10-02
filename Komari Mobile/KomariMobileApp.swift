@@ -2,7 +2,7 @@
 //  KomariMobileApp.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import SwiftUI
@@ -13,6 +13,7 @@ struct KomariMobileApp: App {
 
     init() {
         KMCore.registerUserDefaults()
+        KMCore.migrateCookiesToAppGroup()
     }
 
     var body: some Scene {

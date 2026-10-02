@@ -2,7 +2,7 @@
 //  WidgetKMCore.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 2/19/26.
+//  Created by Takuma Kirishima on 2/19/26.
 //
 
 import Foundation
@@ -17,7 +17,12 @@ enum WidgetKMCore {
     private static let keychainService = "com.argsment.Komari-Mobile"
     private static let keychainAccessGroup = "C7AS5D38Q8.com.argsment.Komari-Mobile"
 
-    static let userDefaults: UserDefaults = UserDefaults(suiteName: "group.com.argsment.Komari-Mobile")!
+    private static let appGroupIdentifier = "group.com.argsment.Komari-Mobile"
+
+    static let userDefaults: UserDefaults = UserDefaults(suiteName: appGroupIdentifier)!
+
+    /// Shared with the app, so the widget reuses the session the app signed in with.
+    static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: appGroupIdentifier)
 
     // MARK: - Configuration Check
     static var isConfigured: Bool {

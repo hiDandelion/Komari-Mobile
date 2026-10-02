@@ -2,7 +2,7 @@
 //  PingChartView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/18/26.
+//  Created by Takuma Kirishima on 2/18/26.
 //
 
 import SwiftUI
@@ -132,7 +132,7 @@ struct PingChartView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 if let loss = task.loss {
-                                    Text(String(format: "%.1f%% loss", loss))
+                                    Text("\(loss / 100, format: .percent.precision(.fractionLength(1))) loss")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -176,8 +176,6 @@ struct PingChartView: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.08), radius: 5, x: 5, y: 5)
-                .shadow(color: .black.opacity(0.06), radius: 5, x: -5, y: -5)
         )
     }
 
@@ -274,8 +272,6 @@ struct PingChartView: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.08), radius: 5, x: 5, y: 5)
-                .shadow(color: .black.opacity(0.06), radius: 5, x: -5, y: -5)
         )
     }
 

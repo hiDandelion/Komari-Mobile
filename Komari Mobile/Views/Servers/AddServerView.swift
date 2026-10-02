@@ -2,7 +2,7 @@
 //  AddServerView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/24/26.
+//  Created by Takuma Kirishima on 2/24/26.
 //
 
 import SwiftUI

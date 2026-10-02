@@ -2,7 +2,7 @@
 //  RequestHandler.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import Foundation
@@ -15,6 +15,9 @@ enum KomariError: LocalizedError {
     case invalidResponse(String)
     case rpcError(String)
     case unsupportedByServer
+    /// Password login needs a 2FA code (the account has two-factor authentication enabled).
+    case twoFactorRequired
+    case invalidTwoFactorCode
 
     var errorDescription: String? {
         switch self {
@@ -32,6 +35,10 @@ enum KomariError: LocalizedError {
             return "RPC Error: \(message)"
         case .unsupportedByServer:
             return String(localized: "This feature is not supported by your Komari dashboard version.")
+        case .twoFactorRequired:
+            return String(localized: "A two-factor authentication code is required.")
+        case .invalidTwoFactorCode:
+            return String(localized: "Invalid two-factor authentication code.")
         }
     }
 }
@@ -39,7 +46,7 @@ enum KomariError: LocalizedError {
 class RequestHandler {
     static let session: URLSession = {
         let config = URLSessionConfiguration.default
-        config.httpCookieStorage = HTTPCookieStorage.shared
+        config.httpCookieStorage = KMCore.cookieStorage
         config.httpCookieAcceptPolicy = .always
         config.httpShouldSetCookies = true
         return URLSession(configuration: config)
@@ -81,8 +88,15 @@ class RequestHandler {
 
     /// Header carrying a 2FA code for sensitive operations (remote exec, disabling 2FA, …).
     static func twoFactorHeaders(_ code: String?) -> [String: String] {
-        guard let code, !code.isEmpty else { return [:] }
+        guard let code = normalizedTwoFactorCode(code) else { return [:] }
         return ["X-2FA-Code": code]
+    }
+
+    /// Digits of a 2FA code, or nil when there are none. The server rejects anything but the bare
+    /// digits, so codes copied as "123 456" would otherwise fail.
+    static func normalizedTwoFactorCode(_ code: String?) -> String? {
+        let digits = (code ?? "").filter { $0.isASCII && $0.isNumber }
+        return digits.isEmpty ? nil : digits
     }
 
     /// Error message from a `{status, message}` body, falling back to a generic description.

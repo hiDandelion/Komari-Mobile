@@ -2,7 +2,7 @@
 //  LoadChartWidget.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 2/19/26.
+//  Created by Takuma Kirishima on 2/19/26.
 //
 
 import WidgetKit
@@ -34,19 +34,43 @@ struct LoadChartEntry: TimelineEntry {
 
 struct LoadChartProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> LoadChartEntry {
-        LoadChartEntry(date: .now, serverName: "Server", serverRegion: "🌍", indicator: .cpu, dataPoints: [], currentValue: "--", isConfigured: true, errorMessage: nil)
+        sampleEntry(indicator: .cpu)
     }
     
     func snapshot(for configuration: SelectLoadChartIntent, in context: Context) async -> LoadChartEntry {
-        LoadChartEntry(date: .now, serverName: "Server", serverRegion: "🌍", indicator: configuration.indicator, dataPoints: [], currentValue: "--", isConfigured: true, errorMessage: nil)
+        // The widget gallery needs a preview right away, so it gets sample data instead of a fetch.
+        if context.isPreview { return sampleEntry(indicator: configuration.indicator) }
+        return await loadEntry(for: configuration)
     }
     
     func timeline(for configuration: SelectLoadChartIntent, in context: Context) async -> Timeline<LoadChartEntry> {
+        let entry = await loadEntry(for: configuration)
+        return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(1800)))
+    }
+    
+    /// Stand-in data so the redacted loading placeholder and the gallery show the real layout.
+    /// Covers the same 4 hours as a real fetch, one point every 5 minutes.
+    private func sampleEntry(indicator: LoadIndicator) -> LoadChartEntry {
+        let scale: Double
+        switch indicator {
+        case .cpu, .memory, .disk: scale = 100
+        case .networkIn, .networkOut: scale = 4 * 1024 * 1024
+        }
+        let now = Date.now
+        let count = 48
+        let points = (0..<count).map { i in
+            let wave = 0.3 + 0.12 * sin(Double(i) / 4) + 0.04 * sin(Double(i) * 1.7)
+            return WidgetChartPoint(date: now.addingTimeInterval(Double(i - count + 1) * 300), value: wave * scale)
+        }
+        let currentValue = formatCurrentValue(points.last?.value, indicator: indicator)
+        return LoadChartEntry(date: now, serverName: "Server", serverRegion: "🌍", indicator: indicator, dataPoints: points, currentValue: currentValue, isConfigured: true, errorMessage: nil)
+    }
+    
+    private func loadEntry(for configuration: SelectLoadChartIntent) async -> LoadChartEntry {
         let indicator = configuration.indicator
         
         guard WidgetKMCore.isConfigured else {
-            let entry = LoadChartEntry(date: .now, serverName: "", serverRegion: "", indicator: indicator, dataPoints: [], currentValue: "--", isConfigured: false, errorMessage: nil)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(1800)))
+            return LoadChartEntry(date: .now, serverName: "", serverRegion: "", indicator: indicator, dataPoints: [], currentValue: "--", isConfigured: false, errorMessage: nil)
         }
         
         do {
@@ -55,8 +79,7 @@ struct LoadChartProvider: AppIntentTimelineProvider {
             
             let serverID = configuration.server?.id ?? nodes.values.sorted(by: { $0.weight < $1.weight }).first?.uuid
             guard let id = serverID, let node = nodes[id] else {
-                let entry = LoadChartEntry(date: .now, serverName: "", serverRegion: "", indicator: indicator, dataPoints: [], currentValue: "--", isConfigured: true, errorMessage: "Server not found")
-                return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(1800)))
+                return LoadChartEntry(date: .now, serverName: "", serverRegion: "", indicator: indicator, dataPoints: [], currentValue: "--", isConfigured: true, errorMessage: "Server not found")
             }
             
             let records = try await WidgetDataProvider.getRecords(uuid: id, hours: 4)
@@ -65,11 +88,9 @@ struct LoadChartProvider: AppIntentTimelineProvider {
             
             let currentValue = formatCurrentValue(points.last?.value, indicator: indicator)
             
-            let entry = LoadChartEntry(date: .now, serverName: node.name, serverRegion: node.region, indicator: indicator, dataPoints: downsampled, currentValue: currentValue, isConfigured: true, errorMessage: nil)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(1800)))
+            return LoadChartEntry(date: .now, serverName: node.name, serverRegion: node.region, indicator: indicator, dataPoints: downsampled, currentValue: currentValue, isConfigured: true, errorMessage: nil)
         } catch {
-            let entry = LoadChartEntry(date: .now, serverName: "", serverRegion: "", indicator: indicator, dataPoints: [], currentValue: "--", isConfigured: true, errorMessage: error.localizedDescription)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(1800)))
+            return LoadChartEntry(date: .now, serverName: "", serverRegion: "", indicator: indicator, dataPoints: [], currentValue: "--", isConfigured: true, errorMessage: error.localizedDescription)
         }
     }
     
@@ -112,7 +133,7 @@ struct LoadChartProvider: AppIntentTimelineProvider {
         guard let value else { return "--" }
         switch indicator {
         case .cpu, .memory, .disk:
-            return String(format: "%.1f%%", value)
+            return (value / 100).formatted(.percent.precision(.fractionLength(1)))
         case .networkIn, .networkOut:
             return formatBytes(Int64(value)) + "/s"
         }
@@ -294,7 +315,7 @@ struct LoadChartMediumView: View {
                                 if let v = value.as(Double.self) {
                                     switch entry.indicator {
                                     case .cpu, .memory, .disk:
-                                        Text("\(Int(v))%")
+                                        Text(Int(v), format: .percent)
                                             .font(.caption2)
                                     case .networkIn, .networkOut:
                                         Text(formatBytes(Int64(v)))

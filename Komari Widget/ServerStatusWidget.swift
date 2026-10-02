@@ -2,7 +2,7 @@
 //  ServerStatusWidget.swift
 //  Komari Widget
 //
-//  Created by Junhui Lou on 2/19/26.
+//  Created by Takuma Kirishima on 2/19/26.
 //
 
 import WidgetKit
@@ -23,17 +23,28 @@ struct ServerStatusEntry: TimelineEntry {
 
 struct ServerStatusProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> ServerStatusEntry {
-        ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: true, isConfigured: true, errorMessage: nil)
+        sampleEntry
     }
 
     func snapshot(for configuration: SelectServerIntent, in context: Context) async -> ServerStatusEntry {
-        ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: true, isConfigured: true, errorMessage: nil)
+        // The widget gallery needs a preview right away, so it gets sample data instead of a fetch.
+        if context.isPreview { return sampleEntry }
+        return await loadEntry(for: configuration)
     }
 
     func timeline(for configuration: SelectServerIntent, in context: Context) async -> Timeline<ServerStatusEntry> {
+        let entry = await loadEntry(for: configuration)
+        return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+    }
+
+    /// Stand-in data so the redacted loading placeholder and the gallery show the real layout.
+    private var sampleEntry: ServerStatusEntry {
+        ServerStatusEntry(date: .now, node: .sample, status: .sample, isOnline: true, isConfigured: true, errorMessage: nil)
+    }
+
+    private func loadEntry(for configuration: SelectServerIntent) async -> ServerStatusEntry {
         guard WidgetKMCore.isConfigured else {
-            let entry = ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: false, isConfigured: false, errorMessage: nil)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+            return ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: false, isConfigured: false, errorMessage: nil)
         }
 
         do {
@@ -43,18 +54,38 @@ struct ServerStatusProvider: AppIntentTimelineProvider {
 
             let serverID = configuration.server?.id ?? nodes.values.sorted(by: { $0.weight < $1.weight }).first?.uuid
             guard let id = serverID, let node = nodes[id] else {
-                let entry = ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: false, isConfigured: true, errorMessage: "Server not found")
-                return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+                return ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: false, isConfigured: true, errorMessage: "Server not found")
             }
 
             let status = statuses[id]
-            let entry = ServerStatusEntry(date: .now, node: node, status: status, isOnline: status?.online ?? false, isConfigured: true, errorMessage: nil)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+            return ServerStatusEntry(date: .now, node: node, status: status, isOnline: status?.online ?? false, isConfigured: true, errorMessage: nil)
         } catch {
-            let entry = ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: false, isConfigured: true, errorMessage: error.localizedDescription)
-            return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(900)))
+            return ServerStatusEntry(date: .now, node: nil, status: nil, isOnline: false, isConfigured: true, errorMessage: error.localizedDescription)
         }
     }
+}
+
+// MARK: - Sample Data
+
+private extension NodeData {
+    static let sample = NodeData(
+        uuid: "sample", name: "Server", cpuName: "", virtualization: "", arch: "", cpuCores: 4,
+        os: "", kernelVersion: "", gpuName: "", region: "🌍", publicRemark: nil,
+        memoryTotal: 8 << 30, swapTotal: 0, diskTotal: 100 << 30, version: nil, weight: 0,
+        price: nil, billingCycle: nil, currency: nil, group: nil, tags: nil, hidden: nil,
+        trafficLimit: nil, trafficLimitType: nil, ipv4: nil, ipv6: nil, createdAt: nil, updatedAt: nil
+    )
+}
+
+private extension NodeLiveStatus {
+    static let sample = NodeLiveStatus(
+        client: "sample", time: "", cpuUsage: 23, gpuUsage: 0,
+        memoryUsed: 3 << 30, memoryTotal: 8 << 30, swapUsed: 0, swapTotal: 0,
+        load1: 0, load5: 0, load15: 0, temperature: 0,
+        diskUsed: 42 << 30, diskTotal: 100 << 30,
+        networkInSpeed: 0, networkOutSpeed: 0, networkOutTotal: 0, networkInTotal: 0,
+        processCount: 0, connectionCount: 0, connectionCountUDP: 0, online: true, uptime: 0
+    )
 }
 
 // MARK: - Threshold Color
@@ -81,7 +112,7 @@ struct WidgetUsageBar: View {
                     .font(.system(size: 10, weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("\(Int(clampedValue))%")
+                Text(Int(clampedValue), format: .percent)
                     .font(.system(size: 10, weight: .medium, design: .rounded))
             }
             // The fill is never narrower than it is tall and is clipped to the track, so low values
@@ -123,7 +154,7 @@ struct WidgetGaugeRing: View {
                     .rotationEffect(.degrees(-90))
                     .shadow(color: thresholdColor(for: clampedValue).opacity(0.3), radius: 3)
                     .animation(.easeOut(duration: 0.6), value: clampedValue)
-                Text("\(Int(clampedValue))%")
+                Text(Int(clampedValue), format: .percent)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .contentTransition(.numericText(value: clampedValue))
             }
@@ -194,8 +225,6 @@ struct ServerStatusSmallView: View {
                 
                 Spacer()
             }
-        } else {
-            ProgressView("Loading...")
         }
     }
 }
@@ -279,8 +308,6 @@ struct ServerStatusMediumView: View {
                 
                 Spacer()
             }
-        } else {
-            ProgressView("Loading...")
         }
     }
 }

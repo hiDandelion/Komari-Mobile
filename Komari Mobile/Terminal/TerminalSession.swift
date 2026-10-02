@@ -2,7 +2,7 @@
 //  TerminalSession.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 7/2/26.
+//  Created by Takuma Kirishima on 7/2/26.
 //
 
 import Foundation
@@ -70,7 +70,7 @@ class TerminalSession {
         self.uuid = uuid
         requestID = nil
         var queryItems: [URLQueryItem] = []
-        if let tfaCode, !tfaCode.isEmpty {
+        if let tfaCode = RequestHandler.normalizedTwoFactorCode(tfaCode) {
             queryItems.append(URLQueryItem(name: "2fa_code", value: tfaCode))
         }
         open(queryItems: queryItems)
@@ -151,7 +151,7 @@ class TerminalSession {
         }
 
         if let cookieURL = KMCore.getAPIURL(endpoint: "/"),
-           let cookies = HTTPCookieStorage.shared.cookies(for: cookieURL),
+           let cookies = KMCore.cookieStorage.cookies(for: cookieURL),
            !cookies.isEmpty,
            let cookieHeader = HTTPCookie.requestHeaderFields(with: cookies)["Cookie"] {
             request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")

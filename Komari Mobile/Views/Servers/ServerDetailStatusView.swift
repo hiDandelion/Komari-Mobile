@@ -2,7 +2,7 @@
 //  ServerDetailStatusView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import SwiftUI
@@ -83,7 +83,6 @@ struct ServerDetailStatusView: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
         )
     }
 

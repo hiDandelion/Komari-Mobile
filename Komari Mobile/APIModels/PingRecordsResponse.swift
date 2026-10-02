@@ -2,7 +2,7 @@
 //  PingRecordsResponse.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/18/26.
+//  Created by Takuma Kirishima on 2/18/26.
 //
 
 import Foundation

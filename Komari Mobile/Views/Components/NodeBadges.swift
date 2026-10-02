@@ -2,7 +2,7 @@
 //  NodeBadges.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 7/2/26.
+//  Created by Takuma Kirishima on 7/2/26.
 //
 
 import SwiftUI
@@ -203,7 +203,7 @@ struct TrafficLimitBar: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("\(percentage, specifier: "%.1f")%")
+                Text(percentage / 100, format: .percent.precision(.fractionLength(1)))
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .contentTransition(.numericText(value: percentage))

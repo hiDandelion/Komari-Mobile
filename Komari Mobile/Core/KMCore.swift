@@ -2,7 +2,7 @@
 //  KMCore.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import Foundation
@@ -13,7 +13,13 @@ class KMCore {
     static let KMDashboardSSLEnabled = "KMDashboardSSLEnabled"
     static let KMDashboardUsername = "KMDashboardUsername"
 
-    static let userDefaults: UserDefaults = UserDefaults(suiteName: "group.com.argsment.Komari-Mobile")!
+    static let appGroupIdentifier = "group.com.argsment.Komari-Mobile"
+
+    static let userDefaults: UserDefaults = UserDefaults(suiteName: appGroupIdentifier)!
+
+    /// Shared with the widget so it reuses the app's session: it cannot sign in by itself when
+    /// the account has 2FA enabled.
+    static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: appGroupIdentifier)
 
     static let userGuideURL: URL = URL(string: "https://support.argsment.com/komari-mobile/user-guide")!
 
@@ -42,6 +48,17 @@ class KMCore {
         userDefaults.register(defaults: defaultValues)
     }
 
+    /// Earlier versions kept cookies in the app's own storage. Copy them over once so existing
+    /// sessions survive the move to `cookieStorage` without signing in (and entering a 2FA code) again.
+    static func migrateCookiesToAppGroup() {
+        let migratedKey = "KMCookiesMigratedToAppGroup"
+        guard !userDefaults.bool(forKey: migratedKey) else { return }
+        for cookie in HTTPCookieStorage.shared.cookies ?? [] {
+            cookieStorage.setCookie(cookie)
+        }
+        userDefaults.set(true, forKey: migratedKey)
+    }
+
     // MARK: - Save Configuration
     static func saveNewDashboardConfigurations(dashboardLink: String, dashboardUsername: String, dashboardPassword: String, dashboardSSLEnabled: Bool, apiKey: String) {
         userDefaults.set(dashboardLink, forKey: KMDashboardLink)
@@ -50,6 +67,15 @@ class KMCore {
 
         setKeychainValue(dashboardPassword, forKey: "KMDashboardPassword")
         setKeychainValue(apiKey, forKey: "KMAPIKey")
+    }
+
+    /// Keeps the saved credentials in sync after the account itself is changed in the app.
+    static func setKomariDashboardUsername(_ username: String) {
+        userDefaults.set(username, forKey: KMDashboardUsername)
+    }
+
+    static func setKomariDashboardPassword(_ password: String) {
+        setKeychainValue(password, forKey: "KMDashboardPassword")
     }
 
     // MARK: - Get Configuration

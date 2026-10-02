@@ -2,7 +2,7 @@
 //  DashboardSummaryView.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 7/2/26.
+//  Created by Takuma Kirishima on 7/2/26.
 //
 
 import SwiftUI
@@ -88,7 +88,6 @@ struct DashboardSummaryView: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
         )
     }
 

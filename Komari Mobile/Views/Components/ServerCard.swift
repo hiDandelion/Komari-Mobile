@@ -2,7 +2,7 @@
 //  ServerCard.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import SwiftUI
@@ -70,7 +70,7 @@ struct ServerCard: View {
 
                 Spacer()
 
-                Text("\(percentage, specifier: "%.1f")% · \(NodeBilling.trafficTypeLabel(node.trafficLimitType)) \(formatBytes(limit))")
+                Text("\(percentage / 100, format: .percent.precision(.fractionLength(1))) · \(NodeBilling.trafficTypeLabel(node.trafficLimitType)) \(formatBytes(limit))")
                     .font(.caption2)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
@@ -229,7 +229,7 @@ struct GaugeRing: View {
                     .animation(.easeOut(duration: 0.6), value: clampedValue)
 
                 // Center percentage
-                Text("\(Int(clampedValue))%")
+                Text(Int(clampedValue), format: .percent)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .contentTransition(.numericText(value: clampedValue))
             }

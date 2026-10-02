@@ -2,7 +2,7 @@
 //  AdminHandler.swift
 //  Komari Mobile
 //
-//  Created by Junhui Lou on 2/15/26.
+//  Created by Takuma Kirishima on 2/15/26.
 //
 
 import Foundation
@@ -577,7 +577,7 @@ class AdminHandler {
         }
 
         var payload: [String: Any] = ["uuid": uuid, "password": password]
-        if let twoFactorCode, !twoFactorCode.isEmpty {
+        if let twoFactorCode = RequestHandler.normalizedTwoFactorCode(twoFactorCode) {
             payload["2fa_code"] = twoFactorCode
         }
         let bodyData = try JSONSerialization.data(withJSONObject: payload)
@@ -621,6 +621,9 @@ class AdminHandler {
 
     /// Enable 2FA with verification code
     static func enable2FA(code: String) async throws {
+        guard let code = RequestHandler.normalizedTwoFactorCode(code) else {
+            throw KomariError.invalidTwoFactorCode
+        }
         guard let url = KMCore.getAPIURL(endpoint: "/api/admin/2fa/enable?code=\(code)") else {
             throw KomariError.invalidDashboardConfiguration
         }

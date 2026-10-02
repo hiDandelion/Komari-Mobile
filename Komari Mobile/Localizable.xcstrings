@@ -92,32 +92,6 @@
         }
       }
     },
-    "%.1f%%" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%.1f%%"
-          }
-        }
-      }
-    },
-    "%.1f%% · %@ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$.1f%% · %2$@ %3$@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$.1f%% · %2$@ %3$@"
-          }
-        }
-      }
-    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -134,6 +108,22 @@
         }
       }
     },
+    "%@ · %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ %3$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@ %3$@"
+          }
+        }
+      }
+    },
     "%@ / %@" : {
       "localizations" : {
         "en" : {
@@ -146,6 +136,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%@ loss" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "丢包 %@"
           }
         }
       }
@@ -538,16 +538,6 @@
         }
       }
     },
-    "%lld%%" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld%%"
-          }
-        }
-      }
-    },
     "%lld°C" : {
       "localizations" : {
         "zh-Hans" : {
@@ -614,6 +604,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "6位验证码"
+          }
+        }
+      }
+    },
+    "A two-factor authentication code is required." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要双重身份验证码。"
           }
         }
       }
@@ -1608,6 +1608,16 @@
         }
       }
     },
+    "Enter your two-factor authentication code to sign in." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入双重身份验证码以登录。"
+          }
+        }
+      }
+    },
     "Error" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1873,6 +1883,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "间隔（秒）"
+          }
+        }
+      }
+    },
+    "Invalid two-factor authentication code." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双重身份验证码无效。"
           }
         }
       }
@@ -3008,6 +3028,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在显示最后上报的数据。"
+          }
+        }
+      }
+    },
+    "Sign In" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录"
           }
         }
       }
